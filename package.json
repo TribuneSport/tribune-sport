@@ -1,0 +1,14 @@
+{
+  "name": "tribune-sport",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "npm@11.16.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "echo \"Le projet sera lancé au Sprint 2\"",
+    "build": "echo \"Build à venir\""
+  }
+}
