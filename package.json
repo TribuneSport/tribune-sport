@@ -10,5 +10,8 @@
   "scripts": {
     "dev": "echo \"Le projet sera lancé au Sprint 2\"",
     "build": "echo \"Build à venir\""
+  },
+  "dependencies": {
+    "rss-parser": "^3.13.0"
   }
 }

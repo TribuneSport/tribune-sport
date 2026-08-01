@@ -1,0 +1,13 @@
+export const AGENTS = {
+  RSS_INTERVAL: 15,
+
+  AI_PROVIDER: "ollama",
+
+  OLLAMA_MODEL: "llama3.2",
+
+  MAX_ARTICLES_PER_RUN: 20,
+
+  MAX_REWRITE_LENGTH: 2500,
+
+  AUTO_PUBLISH: false,
+};

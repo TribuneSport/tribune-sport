@@ -1,29 +1,57 @@
+import Link from "next/link";
+
 export default function Sidebar() {
   return (
-    <aside className="w-64 bg-white shadow-md min-h-screen p-6">
-
-      <h2 className="font-bold text-xl mb-6">
+    <aside className="hidden min-h-screen w-64 bg-slate-900 p-6 text-white lg:block">
+      <h2 className="mb-8 text-2xl font-bold">
         Navigation
       </h2>
 
-      <ul className="space-y-4">
+      <nav>
+        <ul className="space-y-4">
+          <li>
+            <Link href="/" className="block rounded-lg p-2 hover:bg-slate-800">
+              🏠 Accueil
+            </Link>
+          </li>
 
-        <li>🏠 Accueil</li>
+          <li>
+            <Link href="/" className="block rounded-lg p-2 hover:bg-slate-800">
+              🔵🔴 PSG
+            </Link>
+          </li>
 
-        <li>❤️ FC Metz</li>
+          <li>
+            <Link href="/" className="block rounded-lg p-2 hover:bg-slate-800">
+              🇫🇷 Ligue 1
+            </Link>
+          </li>
 
-        <li>🇫🇷 Ligue 1</li>
+          <li>
+            <Link href="/" className="block rounded-lg p-2 hover:bg-slate-800">
+              🌍 Europe
+            </Link>
+          </li>
 
-        <li>🌍 Europe</li>
+          <li>
+            <Link href="/" className="block rounded-lg p-2 hover:bg-slate-800">
+              👤 Joueurs
+            </Link>
+          </li>
 
-        <li>👤 Joueurs</li>
+          <li>
+            <Link href="/" className="block rounded-lg p-2 hover:bg-slate-800">
+              📊 Classements
+            </Link>
+          </li>
 
-        <li>📊 Classements</li>
-
-        <li>⚙️ Administration</li>
-
-      </ul>
-
+          <li>
+            <Link href="/" className="block rounded-lg p-2 hover:bg-slate-800">
+              ⚙️ Administration
+            </Link>
+          </li>
+        </ul>
+      </nav>
     </aside>
   );
 }
