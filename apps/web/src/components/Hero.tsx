@@ -2,37 +2,36 @@ import Link from "next/link";
 
 export default function Hero() {
   return (
-    <section className="mb-10 overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 to-red-900 p-10 text-white shadow-xl">
-      <div className="max-w-3xl">
-        <span className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold">
-          ⚽ Toute l'actualité football
-        </span>
+    <section className="mb-10 rounded-2xl bg-gradient-to-r from-red-700 to-red-900 p-10 text-white shadow-lg">
 
-        <h1 className="mt-6 text-5xl font-bold leading-tight">
-          Bienvenue sur Tribune Sport
-        </h1>
+      <h1 className="text-5xl font-extrabold">
+        Tribune Sport
+      </h1>
 
-        <p className="mt-6 text-xl leading-8 text-red-100">
-          Retrouvez chaque jour toute l'actualité du FC Metz, de la Ligue 1
-          et des plus grands championnats européens.
-        </p>
+      <p className="mt-5 max-w-3xl text-lg leading-8 text-red-100">
+        Toute l'actualité du football, des clubs français et européens.
+        Retrouvez les dernières informations, les analyses, les transferts
+        et les résultats, mis à jour quotidiennement.
+      </p>
 
-        <div className="mt-8 flex flex-wrap gap-4">
-          <Link
-            href="/article/1"
-            className="rounded-xl bg-white px-6 py-3 font-bold text-red-700 transition hover:bg-gray-100"
-          >
-            Lire l'article à la une
-          </Link>
+      <div className="mt-8 flex flex-wrap gap-4">
 
-          <Link
-            href="/"
-            className="rounded-xl border border-white px-6 py-3 font-bold transition hover:bg-white hover:text-red-700"
-          >
-            Voir les actualités
-          </Link>
-        </div>
+        <Link
+          href="/"
+          className="rounded-lg bg-white px-6 py-3 font-semibold text-red-700 transition hover:bg-gray-100"
+        >
+          Dernières actualités
+        </Link>
+
+        <Link
+          href="/admin"
+          className="rounded-lg border border-white px-6 py-3 font-semibold transition hover:bg-white hover:text-red-700"
+        >
+          Administration
+        </Link>
+
       </div>
+
     </section>
   );
 }

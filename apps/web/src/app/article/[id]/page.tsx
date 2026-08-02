@@ -1,8 +1,6 @@
-import Image from "next/image";
-import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-
-import { news } from "@/data/news";
+import Link from "next/link";
 
 type Props = {
   params: Promise<{
@@ -11,16 +9,22 @@ type Props = {
 };
 
 export default async function ArticlePage({ params }: Props) {
+
   const { id } = await params;
 
-  const article = news.find((a) => a.id === Number(id));
+  const article = await prisma.article.findUnique({
+    where: {
+      id: Number(id),
+    },
+  });
 
   if (!article) {
     notFound();
   }
 
   return (
-    <main className="mx-auto max-w-5xl p-8">
+
+    <main className="mx-auto max-w-5xl p-10">
 
       <Link
         href="/"
@@ -29,15 +33,7 @@ export default async function ArticlePage({ params }: Props) {
         ← Retour aux articles
       </Link>
 
-      <Image
-        src={article.image}
-        alt={article.title}
-        width={1200}
-        height={600}
-        className="rounded-2xl w-full object-cover"
-      />
-
-      <span className="mt-6 inline-block rounded-full bg-red-100 px-4 py-2 text-sm font-bold text-red-700">
+      <span className="inline-block rounded-full bg-red-100 px-4 py-2 text-sm font-bold text-red-700">
         {article.category}
       </span>
 
@@ -45,14 +41,33 @@ export default async function ArticlePage({ params }: Props) {
         {article.title}
       </h1>
 
-      <p className="mt-3 text-gray-500">
-        {article.date}
+      <p className="mt-6 text-xl text-gray-600">
+        {article.summary}
       </p>
 
-      <article className="prose mt-10 max-w-none text-lg leading-8">
-        <p>{article.content}</p>
+      <article className="prose mt-10 max-w-none whitespace-pre-wrap">
+        {article.content}
       </article>
 
+      <div className="mt-10 border-t pt-6">
+
+        <strong>Source :</strong>
+
+        <br />
+
+        <a
+          href={article.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 underline"
+        >
+          {article.sourceUrl}
+        </a>
+
+      </div>
+
     </main>
+
   );
+
 }
