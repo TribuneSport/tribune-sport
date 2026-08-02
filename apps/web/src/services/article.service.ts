@@ -1,15 +1,50 @@
 import { prisma } from "@/lib/prisma";
 
 export class ArticleService {
-  async create(data: {
-    title: string;
-    summary: string;
-    content: string;
-    category: string;
-    image: string;
-  }) {
-    return prisma.article.create({
-      data,
+
+  async getPublishedArticles(limit: number = 20) {
+
+    return prisma.article.findMany({
+
+      where: {
+        published: true,
+      },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+
+      take: limit,
+
     });
+
   }
+
+  async getLatestArticles(limit: number = 20) {
+
+    return prisma.article.findMany({
+
+      orderBy: {
+        createdAt: "desc",
+      },
+
+      take: limit,
+
+    });
+
+  }
+
+  async getArticle(id: number) {
+
+    return prisma.article.findUnique({
+
+      where: {
+        id,
+
+      },
+
+    });
+
+  }
+
 }

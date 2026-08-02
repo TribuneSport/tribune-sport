@@ -1,31 +1,55 @@
 export class OllamaService {
-  private readonly url = "http://localhost:11434/api/generate";
 
-  async generate(prompt: string): Promise<string> {
-    try {
-      const response = await fetch(this.url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "llama3.2",
-          prompt,
-          stream: false,
-        }),
-      });
+  async rewrite(title: string, summary: string) {
 
-      if (!response.ok) {
-        throw new Error("Impossible de contacter Ollama");
-      }
+    const prompt = `
+Tu es un journaliste sportif professionnel.
 
-      const data = await response.json();
+Réécris cet article.
 
-      return data.response ?? "";
-    } catch (error) {
-      console.error("Erreur Ollama :", error);
+Consignes :
 
-      return "";
-    }
+- Français.
+- Style journalistique.
+- Aucun copier/coller.
+- Pas de phrase inventée.
+- Garde uniquement les faits.
+- Corrige les fautes.
+- Résumé de 2 phrases maximum.
+- Termine par :
+Source : média d'origine.
+
+Titre :
+${title}
+
+Article :
+${summary}
+`;
+
+    const response = await fetch("http://localhost:11434/api/generate", {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify({
+
+        model: "llama3.1:8b",
+
+        prompt,
+
+        stream: false,
+
+      }),
+
+    });
+
+    const data = await response.json();
+
+    return data.response;
+
   }
+
 }

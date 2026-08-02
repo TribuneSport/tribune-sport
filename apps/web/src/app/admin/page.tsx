@@ -1,39 +1,87 @@
-export default function AdminPage() {
-  return (
-    <main className="p-10">
+import { prisma } from "@/lib/prisma";
+import AdminMenu from "@/components/admin/AdminMenu";
+import ArticleActions from "@/components/admin/ArticleActions";
 
-      <h1 className="text-4xl font-bold mb-8">
-        Tribune Sport Administration
+export default async function AdminPage() {
+
+  const articles = await prisma.article.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return (
+
+    <main className="mx-auto max-w-7xl p-10">
+
+      <h1 className="mb-8 text-4xl font-bold">
+        Administration Tribune Sport
       </h1>
 
-      <div className="grid grid-cols-4 gap-6">
+      <AdminMenu />
 
-        <div className="rounded-xl border p-6">
-          <h2 className="font-bold">
-            Brouillons IA
-          </h2>
-        </div>
+      <table className="w-full border">
 
-        <div className="rounded-xl border p-6">
-          <h2 className="font-bold">
-            Articles publiés
-          </h2>
-        </div>
+        <thead>
 
-        <div className="rounded-xl border p-6">
-          <h2 className="font-bold">
-            Sources RSS
-          </h2>
-        </div>
+          <tr className="bg-gray-100">
 
-        <div className="rounded-xl border p-6">
-          <h2 className="font-bold">
-            Agents IA
-          </h2>
-        </div>
+            <th className="p-4 text-left">Titre</th>
 
-      </div>
+            <th className="p-4 text-left">Club</th>
+
+            <th className="p-4 text-left">Statut</th>
+
+            <th className="p-4 text-left">Actions</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          {articles.map((article) => (
+
+            <tr
+              key={article.id}
+              className="border-t"
+            >
+
+              <td className="p-4">
+                {article.title}
+              </td>
+
+              <td className="p-4">
+                {article.category}
+              </td>
+
+              <td className="p-4">
+
+                {article.published
+                  ? "✅ Publié"
+                  : "🟠 Brouillon"}
+
+              </td>
+
+              <td className="p-4">
+
+                <ArticleActions
+                  id={article.id}
+                  published={article.published}
+                />
+
+              </td>
+
+            </tr>
+
+          ))}
+
+        </tbody>
+
+      </table>
 
     </main>
+
   );
+
 }

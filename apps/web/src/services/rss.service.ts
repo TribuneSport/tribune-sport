@@ -1,30 +1,66 @@
 import Parser from "rss-parser";
-import { RSS_SOURCES } from "@/rss/sources";
 
 const parser = new Parser();
 
 export class RSSService {
+
   async getSources() {
-    const articles = [];
 
-    for (const source of RSS_SOURCES) {
+    const feeds = [
+
+      {
+        club: "Football",
+        url: "https://feeds.bbci.co.uk/sport/football/rss.xml",
+      },
+
+      {
+        club: "Football",
+        url: "https://www.theguardian.com/football/rss",
+      },
+
+      {
+        club: "UEFA",
+        url: "https://www.uefa.com/rssfeed/news/rss.xml",
+      },
+
+    ];
+
+    const articles: any[] = [];
+
+    for (const feed of feeds) {
+
       try {
-        const feed = await parser.parseURL(source.url);
 
-        for (const item of feed.items) {
+        const rss = await parser.parseURL(feed.url);
+
+        for (const item of rss.items) {
+
           articles.push({
-            club: source.club,
+
+            club: feed.club,
+
             title: item.title ?? "",
+
+            description: item.contentSnippet ?? item.content ?? "",
+
             link: item.link ?? "",
-            description: item.contentSnippet ?? "",
-            date: item.pubDate ?? "",
+
+            pubDate: item.pubDate ?? "",
+
           });
+
         }
-      } catch (error) {
-        console.error(`Erreur RSS ${source.club}`, error);
+
+      } catch (e) {
+
+        console.error("Flux RSS indisponible :", feed.url);
+
       }
+
     }
 
     return articles;
+
   }
+
 }

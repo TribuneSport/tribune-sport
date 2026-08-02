@@ -1,95 +1,97 @@
-"use client";
+import Header from "@/components/Header";
+import Sidebar from "@/components/Sidebar";
+import Hero from "@/components/Hero";
+import FeaturedArticle from "@/components/FeaturedArticle";
+import LatestNews from "@/components/LatestNews";
+import MostRead from "@/components/MostRead";
+import Footer from "@/components/Footer";
 
-import { useState } from "react";
+import { ArticleService } from "@/services/article.service";
 
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
-import Hero from "../components/Hero";
-import FeaturedArticle from "../components/FeaturedArticle";
-import LatestNews from "../components/LatestNews";
-import MostRead from "../components/MostRead";
-import SearchBar from "../components/SearchBar";
-import Categories from "../components/Categories";
-import StatCard from "../components/StatCard";
-import Footer from "../components/Footer";
+export default async function Home() {
 
-import { news } from "../data/news";
+  const service = new ArticleService();
 
-export default function Home() {
-  const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Tous");
-
-  const filteredNews = news.filter((article) => {
-    const matchesSearch = (
-      article.title +
-      article.summary +
-      article.category
-    )
-      .toLowerCase()
-      .includes(search.toLowerCase());
-
-    const matchesCategory =
-      selectedCategory === "Tous" ||
-      article.category === selectedCategory;
-
-    return matchesSearch && matchesCategory;
-  });
+  const articles = await service.getLatestArticles(20);
 
   return (
-    <main className="min-h-screen bg-slate-100">
-      <Header />
 
-      <div className="flex">
-        <Sidebar />
+    <main className="flex">
 
-        <section className="flex-1 p-8">
-          <Hero />
+      <Sidebar />
 
-          <FeaturedArticle />
+      <section className="flex-1 p-8">
 
-          <div className="mb-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard
-              title="Articles affichés"
-              value={filteredNews.length.toString()}
-            />
+        <Header />
 
-            <StatCard
-              title="Total articles"
-              value={news.length.toString()}
-            />
+        <Hero />
 
-            <StatCard
-              title="Joueurs"
-              value="125"
-            />
+        <FeaturedArticle />
 
-            <StatCard
-              title="Clubs suivis"
-              value="18"
-            />
+        <div className="mb-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+          <div className="rounded-xl bg-white p-6 shadow">
+            <h3 className="text-gray-500">
+              Articles
+            </h3>
+
+            <p className="text-3xl font-bold">
+              {articles.length}
+            </p>
           </div>
 
-          <SearchBar
-            value={search}
-            onChange={setSearch}
-          />
+          <div className="rounded-xl bg-white p-6 shadow">
+            <h3 className="text-gray-500">
+              Brouillons
+            </h3>
 
-          <Categories
-            selected={selectedCategory}
-            onSelect={setSelectedCategory}
-          />
-
-          <div className="grid gap-8 lg:grid-cols-3 mb-12">
-            <div className="lg:col-span-2">
-              <LatestNews />
-            </div>
-
-            <MostRead />
+            <p className="text-3xl font-bold">
+              {articles.filter(a => !a.published).length}
+            </p>
           </div>
 
-          <Footer />
-        </section>
-      </div>
+          <div className="rounded-xl bg-white p-6 shadow">
+            <h3 className="text-gray-500">
+              Publiés
+            </h3>
+
+            <p className="text-3xl font-bold">
+              {articles.filter(a => a.published).length}
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-white p-6 shadow">
+            <h3 className="text-gray-500">
+              Clubs
+            </h3>
+
+            <p className="text-3xl font-bold">
+              {
+                [...new Set(articles.map(a => a.category))].length
+              }
+            </p>
+          </div>
+
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-3">
+
+          <div className="lg:col-span-2">
+
+            <LatestNews />
+
+          </div>
+
+          <MostRead />
+
+        </div>
+
+        <Footer />
+
+      </section>
+
     </main>
+
   );
+
 }
