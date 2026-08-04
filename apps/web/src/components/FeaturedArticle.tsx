@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
@@ -13,12 +14,16 @@ export default async function FeaturedArticle() {
 
   if (!article) {
     return (
-      <section className="rounded-xl bg-white p-10 shadow">
-        <h2 className="text-3xl font-bold">
-          Tribune Sport
+      <section className="mb-12 rounded-3xl bg-white p-10 shadow-lg">
+        <span className="rounded-full bg-red-100 px-4 py-2 text-sm font-bold text-red-700">
+          📰 À la une
+        </span>
+
+        <h2 className="mt-6 text-4xl font-bold">
+          Tribune Sport est prêt !
         </h2>
 
-        <p className="mt-4 text-gray-600">
+        <p className="mt-4 text-lg text-gray-600">
           Aucun article publié pour le moment.
         </p>
       </section>
@@ -26,31 +31,49 @@ export default async function FeaturedArticle() {
   }
 
   return (
-    <section className="rounded-xl bg-white p-10 shadow">
+    <section className="my-12 overflow-hidden rounded-3xl bg-white shadow-xl">
+      <div className="grid lg:grid-cols-2">
+        <div className="relative h-72 lg:h-full">
+          <Image
+            src={article.image || "/placeholder.jpg"}
+            alt={article.title}
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
 
-      <span className="rounded bg-red-700 px-3 py-1 text-sm font-bold text-white">
-        À la une
-      </span>
+        <div className="flex flex-col justify-center p-10">
+          <span className="mb-4 inline-block w-fit rounded-full bg-red-100 px-4 py-2 text-sm font-bold text-red-700">
+            🔥 À LA UNE
+          </span>
 
-      <p className="mt-6 text-sm font-semibold uppercase tracking-wide text-red-700">
-        {article.category}
-      </p>
+          <span className="text-sm font-bold uppercase tracking-wider text-gray-500">
+            {article.category}
+          </span>
 
-      <h2 className="mt-3 text-4xl font-bold leading-tight">
-        {article.title}
-      </h2>
+          <h2 className="mt-4 text-4xl font-extrabold leading-tight">
+            {article.title}
+          </h2>
 
-      <p className="mt-6 text-lg leading-8 text-gray-600">
-        {article.summary}
-      </p>
+          <p className="mt-6 text-lg leading-8 text-gray-600">
+            {article.summary}
+          </p>
 
-      <Link
-        href={`/article/${article.id}`}
-        className="mt-8 inline-block rounded-lg bg-red-700 px-6 py-3 font-semibold text-white transition hover:bg-red-800"
-      >
-        Lire l'article
-      </Link>
+          <div className="mt-8 flex items-center gap-4">
+            <Link
+              href={`/article/${article.id}`}
+              className="rounded-xl bg-red-700 px-8 py-4 font-bold text-white transition hover:bg-red-800"
+            >
+              Lire l'article →
+            </Link>
 
+            <span className="text-sm text-gray-500">
+              Publié récemment
+            </span>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { RSSService } from "./rss.service";
+import { normalizeCategory } from "@/lib/categories";
+import { createSlug } from "@/lib/slug";
 
 export class RSSImportService {
-
   async import() {
-
     const rss = new RSSService();
 
     const articles = await rss.getSources();
@@ -12,7 +12,6 @@ export class RSSImportService {
     let imported = 0;
 
     for (const article of articles) {
-
       if (!article.link) continue;
 
       const existing = await prisma.article.findUnique({
@@ -23,17 +22,34 @@ export class RSSImportService {
 
       if (existing) continue;
 
+      const title = article.title?.trim() || "Sans titre";
+
+      const summary =
+        article.description?.trim() ||
+        "Aucun résumé disponible.";
+
+      let slug = createSlug(title);
+
+      let i = 2;
+
+      while (
+        await prisma.article.findUnique({
+          where: { slug },
+        })
+      ) {
+        slug = `${createSlug(title)}-${i}`;
+        i++;
+      }
+
       await prisma.article.create({
-
         data: {
+          title,
 
-          title: article.title,
+          summary,
 
-          summary: article.description,
+          content: summary,
 
-          content: article.description,
-
-          category: article.club,
+          category: normalizeCategory(article.club),
 
           image: "",
 
@@ -41,16 +57,17 @@ export class RSSImportService {
 
           published: false,
 
-        },
+          seoTitle: title,
 
+          seoDescription: summary.substring(0, 160),
+
+          slug,
+        },
       });
 
       imported++;
-
     }
 
     return imported;
-
   }
-
 }

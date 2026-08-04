@@ -1,44 +1,68 @@
-import { articlePrompt } from "@/prompts/article.prompt";
-import { OllamaService } from "./ollama.service";
+import OpenAI from "openai";
 
-export interface RewriteArticleInput {
-  title: string;
-  summary: string;
-  content: string;
-}
-
-export interface RewriteArticleOutput {
-  title: string;
-  summary: string;
-  content: string;
-}
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export class AIService {
-  private ollama = new OllamaService();
+  async rewriteArticle(article: {
+    title: string;
+    content: string;
+    category: string;
+  }) {
+    const prompt = `
+Tu es journaliste sportif.
 
-  async rewriteArticle(
-    article: RewriteArticleInput
-  ): Promise<RewriteArticleOutput> {
+Réécris entièrement cet article.
 
-    const prompt = articlePrompt(
-      article.title,
-      article.content
-    );
+Consignes :
 
-    const rewritten = await this.ollama.generate(prompt);
+- ne copie jamais les phrases
+- garde uniquement les faits
+- écris dans un style journalistique
+- améliore le titre
+- écris un résumé
+- écris un article complet
+- optimise le référencement SEO
 
-    if (!rewritten) {
-      return {
-        title: article.title,
-        summary: article.summary,
-        content: article.content,
-      };
+Retourne uniquement du JSON.
+
+Format :
+
+{
+"title":"",
+"summary":"",
+"content":"",
+"seoTitle":"",
+"seoDescription":""
+}
+
+Titre :
+
+${article.title}
+
+Article :
+
+${article.content}
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5",
+      temperature: 0.5,
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    });
+
+    const text = completion.choices[0].message.content;
+
+    if (!text) {
+      throw new Error("Réponse IA vide");
     }
 
-    return {
-      title: article.title,
-      summary: article.summary,
-      content: rewritten,
-    };
+    return JSON.parse(text);
   }
 }

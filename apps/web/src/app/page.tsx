@@ -4,94 +4,87 @@ import Hero from "@/components/Hero";
 import FeaturedArticle from "@/components/FeaturedArticle";
 import LatestNews from "@/components/LatestNews";
 import MostRead from "@/components/MostRead";
+import CategorySection from "@/components/CategorySection";
 import Footer from "@/components/Footer";
-
 import { ArticleService } from "@/services/article.service";
 
 export default async function Home() {
-
   const service = new ArticleService();
-
   const articles = await service.getLatestArticles(20);
 
   return (
-
-    <main className="flex">
-
+    <main className="flex min-h-screen bg-slate-100">
       <Sidebar />
 
-      <section className="flex-1 p-8">
-
+      <section className="flex-1">
         <Header />
 
-        <Hero />
+        <div className="mx-auto max-w-7xl p-8">
+          <Hero />
 
-        <FeaturedArticle />
+          <FeaturedArticle />
 
-        <div className="mb-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div className="my-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-xl bg-white p-6 shadow">
+              <h3 className="text-gray-500">Articles</h3>
+              <p className="mt-2 text-3xl font-bold">
+                {articles.length}
+              </p>
+            </div>
 
-          <div className="rounded-xl bg-white p-6 shadow">
-            <h3 className="text-gray-500">
-              Articles
-            </h3>
+            <div className="rounded-xl bg-white p-6 shadow">
+              <h3 className="text-gray-500">Brouillons</h3>
+              <p className="mt-2 text-3xl font-bold">
+                {articles.filter((a) => !a.published).length}
+              </p>
+            </div>
 
-            <p className="text-3xl font-bold">
-              {articles.length}
-            </p>
+            <div className="rounded-xl bg-white p-6 shadow">
+              <h3 className="text-gray-500">Publiés</h3>
+              <p className="mt-2 text-3xl font-bold">
+                {articles.filter((a) => a.published).length}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-white p-6 shadow">
+              <h3 className="text-gray-500">Catégories</h3>
+              <p className="mt-2 text-3xl font-bold">
+                {[...new Set(articles.map((a) => a.category))].length}
+              </p>
+            </div>
           </div>
 
-          <div className="rounded-xl bg-white p-6 shadow">
-            <h3 className="text-gray-500">
-              Brouillons
-            </h3>
+          <div className="grid gap-8 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <LatestNews />
+            </div>
 
-            <p className="text-3xl font-bold">
-              {articles.filter(a => !a.published).length}
-            </p>
+            <MostRead />
           </div>
 
-          <div className="rounded-xl bg-white p-6 shadow">
-            <h3 className="text-gray-500">
-              Publiés
-            </h3>
+          <CategorySection
+            title="🇫🇷 Ligue 1"
+            category="Ligue 1"
+          />
 
-            <p className="text-3xl font-bold">
-              {articles.filter(a => a.published).length}
-            </p>
-          </div>
+          <CategorySection
+            title="💰 Mercato"
+            category="Mercato"
+          />
 
-          <div className="rounded-xl bg-white p-6 shadow">
-            <h3 className="text-gray-500">
-              Clubs
-            </h3>
+          <CategorySection
+            title="🌍 Europe"
+            category="Europe"
+          />
 
-            <p className="text-3xl font-bold">
-              {
-                [...new Set(articles.map(a => a.category))].length
-              }
-            </p>
-          </div>
+          <CategorySection
+            title="🌎 International"
+            category="International"
+          />
 
+          <Footer />
         </div>
-
-        <div className="grid gap-8 lg:grid-cols-3">
-
-          <div className="lg:col-span-2">
-
-            <LatestNews />
-
-          </div>
-
-          <MostRead />
-
-        </div>
-
-        <Footer />
-
       </section>
-
     </main>
-
   );
-
 }
