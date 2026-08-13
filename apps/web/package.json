@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@auth/db-adapter": "^2.11.3",
     "@prisma/client": "^6.19.3",
     "@tiptap/pm": "^3.29.2",
     "@tiptap/react": "^3.29.2",
