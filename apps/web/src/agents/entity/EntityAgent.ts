@@ -32,8 +32,8 @@ export class EntityAgent {
       let competitionId = article.competitionId;
 
       if (!clubId) {
-        const club = clubs.find((c) =>
-          text.includes(c.name.toLowerCase())
+        const club = clubs.find((club) =>
+          text.includes(club.name.toLowerCase())
         );
 
         if (club) {
@@ -42,9 +42,9 @@ export class EntityAgent {
       }
 
       if (!playerId) {
-        const player = players.find((p) =>
+        const player = players.find((player) =>
           text.includes(
-            `${p.firstname} ${p.lastname}`.toLowerCase()
+            `${player.firstname} ${player.lastname}`.toLowerCase()
           )
         );
 
@@ -54,8 +54,8 @@ export class EntityAgent {
       }
 
       if (!competitionId) {
-        const competition = competitions.find((c) =>
-          text.includes(c.name.toLowerCase())
+        const competition = competitions.find((competition) =>
+          text.includes(competition.name.toLowerCase())
         );
 
         if (competition) {
