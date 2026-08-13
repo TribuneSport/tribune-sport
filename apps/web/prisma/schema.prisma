@@ -8,53 +8,215 @@ datasource db {
 }
 
 model Article {
-  id             Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  title          String
-  summary        String
-  content        String
+  title   String
+  summary String
+  content String
 
-  category       String
-  image          String
+  category String
+  image    String
 
-  sourceUrl      String   @unique
+  sourceUrl String @unique
 
-  published      Boolean  @default(false)
+  published Boolean @default(false)
 
   seoTitle       String?
   seoDescription String?
-  slug           String?  @unique
+  slug           String? @unique
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  clubId        Int?
+  playerId      Int?
+  competitionId Int?
+
+  club        Club?        @relation(fields: [clubId], references: [id])
+  player      Player?      @relation(fields: [playerId], references: [id])
+  competition Competition? @relation(fields: [competitionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published])
+  @@index([category])
+  @@index([clubId])
+  @@index([playerId])
+  @@index([competitionId])
+}
+
+model Club {
+  id Int @id @default(autoincrement())
+
+  name String @unique
+  slug String @unique
+
+  country String
+  city    String?
+
+  stadium String?
+  founded Int?
+
+  logo   String?
+  banner String?
+
+  description String?
+
+  articles Article[]
+  players  Player[]
+
+  homeMatches Match[] @relation("HomeClub")
+  awayMatches Match[] @relation("AwayClub")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Player {
+  id Int @id @default(autoincrement())
+
+  firstname String
+  lastname  String
+  slug      String @unique
+
+  nationality String?
+
+  birthDate DateTime?
+
+  position String?
+
+  number Int?
+
+  photo String?
+
+  clubId Int?
+
+  club Club? @relation(fields: [clubId], references: [id])
+
+  articles Article[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Competition {
+  id Int @id @default(autoincrement())
+
+  name String @unique
+  slug String @unique
+
+  country String?
+
+  logo String?
+
+  season String?
+
+  articles Article[]
+  matches  Match[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Match {
+  id Int @id @default(autoincrement())
+
+  competitionId Int
+
+  homeClubId Int
+  awayClubId Int
+
+  matchDate DateTime
+
+  homeScore Int?
+  awayScore Int?
+
+  status String
+
+  competition Competition @relation(fields: [competitionId], references: [id])
+
+  homeClub Club @relation("HomeClub", fields: [homeClubId], references: [id])
+  awayClub Club @relation("AwayClub", fields: [awayClubId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([matchDate])
+}
+
+model Standing {
+  id Int @id @default(autoincrement())
+
+  competitionId Int
+
+  clubId Int
+
+  position Int
+
+  played Int @default(0)
+
+  won Int @default(0)
+
+  drawn Int @default(0)
+
+  lost Int @default(0)
+
+  goalsFor Int @default(0)
+
+  goalsAgainst Int @default(0)
+
+  goalDifference Int @default(0)
+
+  points Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Transfer {
+  id Int @id @default(autoincrement())
+
+  playerName String
+
+  fromClub String
+
+  toClub String
+
+  fee String?
+
+  transferDate DateTime
+
+  createdAt DateTime @default(now())
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id String @id @default(cuid())
+
   name          String?
   email         String    @unique
   emailVerified DateTime?
   image         String?
 
-  accounts      Account[]
-  sessions      Session[]
+  accounts Account[]
+  sessions Session[]
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
+  id String @id @default(cuid())
 
-  type              String
-  provider          String
+  userId String
+
+  type String
+
+  provider String
+
   providerAccountId String
 
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
+  refresh_token String?
+  access_token  String?
+  expires_at    Int?
+  token_type    String?
+  scope         String?
+  id_token      String?
+  session_state String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -62,13 +224,13 @@ model Account {
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  sessionToken String   @unique
+  sessionToken String @unique
 
-  userId       String
+  userId String
 
-  expires      DateTime
+  expires DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -76,9 +238,9 @@ model Session {
 model VerificationToken {
   identifier String
 
-  token      String   @unique
+  token String @unique
 
-  expires    DateTime
+  expires DateTime
 
   @@unique([identifier, token])
 }

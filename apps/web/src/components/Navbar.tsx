@@ -1,22 +1,33 @@
 import Link from "next/link";
-import { NAVIGATION } from "@/lib/navigation";
+
+const links = [
+  ["Accueil", "/"],
+  ["France", "/categorie/france"],
+  ["Mercato", "/categorie/mercato"],
+  ["Europe", "/categorie/europe"],
+  ["International", "/categorie/international"],
+  ["Transferts", "/transferts"],
+  ["Classements", "/classements"],
+];
 
 export default function Navbar() {
   return (
-    <nav className="border-b border-gray-200 bg-white">
-      <div className="mx-auto flex max-w-7xl items-center gap-8 overflow-x-auto px-6 py-3">
+    <nav className="border-b bg-white">
 
-        {NAVIGATION.map((item) => (
+      <div className="mx-auto flex max-w-7xl gap-8 overflow-x-auto px-4 py-4">
+
+        {links.map(([label, href]) => (
           <Link
-            key={item.href}
-            href={item.href}
-            className="whitespace-nowrap border-b-2 border-transparent pb-2 text-sm font-semibold uppercase tracking-wide text-slate-700 transition-all duration-200 hover:border-red-600 hover:text-red-600"
+            key={href}
+            href={href}
+            className="whitespace-nowrap font-semibold transition hover:text-red-600"
           >
-            {item.label}
+            {label}
           </Link>
         ))}
 
       </div>
+
     </nav>
   );
 }

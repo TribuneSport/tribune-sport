@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
 
   const { id } = await request.json();
 
-  await prisma.article.update({
+  await db.article.update({
 
     where: {
       id,

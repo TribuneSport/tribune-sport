@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { Search, Menu } from "lucide-react";
 import Navbar from "./Navbar";
 import SearchBar from "./SearchBar";
 
@@ -6,28 +9,45 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-50 border-b bg-white shadow-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+
+        <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4">
+
           <Link
             href="/"
-            className="flex items-center gap-3 text-3xl font-extrabold text-red-700"
+            className="shrink-0 text-3xl font-black tracking-tight"
           >
-            ⚽
-            <span>Tribune Sport</span>
+            <span className="text-red-600">TRIBUNE</span>{" "}
+            <span className="text-gray-900">SPORT</span>
           </Link>
 
-          <div className="hidden w-[420px] lg:block">
+          <div className="hidden flex-1 lg:block">
             <SearchBar />
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="rounded-xl border border-red-700 px-5 py-2 font-semibold text-red-700 transition hover:bg-red-700 hover:text-white">
-              Connexion
+
+            <Link
+              href="/recherche"
+              className="rounded-full p-2 transition hover:bg-gray-100 lg:hidden"
+              aria-label="Recherche"
+            >
+              <Search size={22} />
+            </Link>
+
+            <button
+              className="rounded-full p-2 transition hover:bg-gray-100 lg:hidden"
+              aria-label="Menu"
+            >
+              <Menu size={24} />
             </button>
+
           </div>
+
         </div>
 
-        <Navbar />
       </header>
+
+      <Navbar />
     </>
   );
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 type Props = {
   searchParams: Promise<{
@@ -13,9 +13,10 @@ export default async function RecherchePage({
 }: Props) {
   const { q } = await searchParams;
 
-  const articles = await prisma.article.findMany({
+  const articles = await db.article.findMany({
     where: q
       ? {
+          published: true,
           OR: [
             {
               title: {
@@ -30,13 +31,18 @@ export default async function RecherchePage({
               },
             },
             {
+              content: {
+                contains: q,
+                mode: "insensitive",
+              },
+            },
+            {
               category: {
                 contains: q,
                 mode: "insensitive",
               },
             },
           ],
-          published: true,
         }
       : {
           published: true,
@@ -48,58 +54,141 @@ export default async function RecherchePage({
   });
 
   return (
-    <main className="min-h-screen bg-slate-100">
+    <main className="min-h-screen bg-gray-100">
 
-      <div className="mx-auto max-w-7xl py-10">
+      <div className="mx-auto max-w-7xl px-4 py-8">
 
-        <h1 className="mb-10 text-5xl font-extrabold">
-          Recherche
-        </h1>
+        <header className="mb-10">
 
-        <p className="mb-10 text-gray-600">
-          {articles.length} résultat(s)
-          {q && <> pour <strong>"{q}"</strong></>}
-        </p>
+          <p className="font-bold uppercase tracking-widest text-red-600">
+            Tribune Sport
+          </p>
 
-        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+          <h1 className="mt-3 text-5xl font-black">
+            Recherche
+          </h1>
 
-          {articles.map((article) => (
+          <p className="mt-4 text-lg text-gray-600">
+            Recherchez un club, un joueur, une compétition ou un article.
+          </p>
 
-            <Link
-              key={article.id}
-              href={`/article/${article.slug}`}
-              className="overflow-hidden rounded-2xl bg-white shadow transition hover:-translate-y-1 hover:shadow-xl"
+        </header>
+
+        <form
+          action="/recherche"
+          method="GET"
+          className="mb-12 rounded-3xl bg-white p-6 shadow-lg"
+        >
+
+          <div className="flex flex-col gap-4 md:flex-row">
+
+            <input
+              type="text"
+              name="q"
+              defaultValue={q}
+              placeholder="Ex : Mbappé, Ligue 1, Mercato..."
+              className="flex-1 rounded-xl border border-gray-300 px-5 py-4 text-lg outline-none focus:border-red-600"
+            />
+
+            <button
+              type="submit"
+              className="rounded-xl bg-red-700 px-8 py-4 font-bold text-white transition hover:bg-red-800"
             >
+              Rechercher
+            </button>
 
-              <Image
-                src={article.image || "/placeholder.jpg"}
-                alt={article.title}
-                width={600}
-                height={350}
-                className="h-56 w-full object-cover"
-              />
+          </div>
 
-              <div className="p-6">
+        </form>
 
-                <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
-                  {article.category}
-                </span>
+        <div className="mb-8 flex items-center justify-between">
 
-                <h2 className="mt-4 text-2xl font-bold">
-                  {article.title}
-                </h2>
+          <h2 className="text-2xl font-black">
 
-                <p className="mt-4 line-clamp-3 text-gray-600">
-                  {article.summary}
-                </p>
+            {q
+              ? `Résultats pour "${q}"`
+              : "Dernières actualités"}
 
-              </div>
+          </h2>
 
-            </Link>
-
-          ))}
+          <span className="rounded-full bg-red-100 px-4 py-2 font-bold text-red-700">
+            {articles.length} résultat{articles.length > 1 ? "s" : ""}
+          </span>
 
         </div>
+
+        {articles.length === 0 ? (
+
+          <div className="rounded-3xl bg-white p-16 text-center shadow">
+
+            <h3 className="text-3xl font-black">
+              Aucun résultat
+            </h3>
+
+            <p className="mt-4 text-gray-600">
+              Essayez un autre mot-clé.
+            </p>
+
+          </div>
+
+        ) : (
+
+          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+
+            {articles.map((article) => (
+
+              <Link
+                key={article.id}
+                href={`/article/${article.slug}`}
+                className="group overflow-hidden rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+              >
+
+                <div className="relative h-56">
+
+                  <Image
+                    src={article.image || "/football.jpg"}
+                    alt={article.title}
+                    fill
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
+
+                </div>
+
+                <div className="p-6">
+
+                  <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
+                    {article.category}
+                  </span>
+
+                  <h3 className="mt-4 text-2xl font-black leading-8">
+                    {article.title}
+                  </h3>
+
+                  <p className="mt-4 line-clamp-3 text-gray-600">
+                    {article.summary}
+                  </p>
+
+                  <div className="mt-6 flex items-center justify-between">
+
+                    <span className="text-sm text-gray-500">
+                      {new Date(article.createdAt).toLocaleDateString("fr-FR")}
+                    </span>
+
+                    <span className="font-bold text-red-700">
+                      Lire →
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </Link>
+
+            ))}
+
+          </div>
+
+        )}
 
       </div>
 

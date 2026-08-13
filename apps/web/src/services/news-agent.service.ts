@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { OllamaService } from "./ollama.service";
 
 export class NewsAgentService {
@@ -7,7 +7,7 @@ export class NewsAgentService {
 
     const ollama = new OllamaService();
 
-    const articles = await prisma.article.findMany({
+    const articles = await db.article.findMany({
 
       where: {
         published: false,
@@ -26,7 +26,7 @@ export class NewsAgentService {
         article.summary
       );
 
-      await prisma.article.update({
+      await db.article.update({
 
         where: {
           id: article.id,

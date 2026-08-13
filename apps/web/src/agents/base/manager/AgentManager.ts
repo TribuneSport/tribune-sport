@@ -1,21 +1,35 @@
-import { BaseAgent } from "../base/BaseAgent";
-import { SourceAgent } from "../news/SourceAgent";
-import { NewsAgent } from "../news/NewsAgent";
+import { BaseAgent } from "../BaseAgent";
+import { RSSAgent } from "../../rss/RSSAgent";
+import { CleaningAgent } from "../../cleaning/CleaningAgent";
+import { EntityAgent } from "../../entity/EntityAgent";
+import { SEOAgent } from "../../seo/SEOAgent";
+import { PublishAgent } from "../../publish/PublishAgent";
 
 export class AgentManager extends BaseAgent {
   constructor() {
     super("AgentManager");
   }
 
-  async execute(): Promise<void> {
-    this.log("Démarrage des agents...");
+  async execute(): Promise<number> {
+    this.log("Démarrage du pipeline...");
 
-    const sourceAgent = new SourceAgent();
-    await sourceAgent.execute();
+    const rss = new RSSAgent();
+    const imported = await rss.execute();
 
-    const newsAgent = new NewsAgent();
-    await newsAgent.execute();
+    const cleaning = new CleaningAgent();
+    await cleaning.execute();
 
-    this.success("Tous les agents ont terminé leur travail.");
+    const entity = new EntityAgent();
+    await entity.execute();
+
+    const seo = new SEOAgent();
+    await seo.execute();
+
+    const publish = new PublishAgent();
+    await publish.execute();
+
+    this.success("Pipeline terminé.");
+
+    return imported;
   }
 }

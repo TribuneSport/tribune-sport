@@ -1,10 +1,10 @@
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export class AdminService {
 
   async getDrafts() {
 
-    return prisma.article.findMany({
+    return db.article.findMany({
 
       where: {
         published: false,
@@ -20,7 +20,7 @@ export class AdminService {
 
   async getPublished() {
 
-    return prisma.article.findMany({
+    return db.article.findMany({
 
       where: {
         published: true,

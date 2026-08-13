@@ -9,4 +9,9 @@ export function slugify(text: string): string {
     .replace(/-+/g, "-");
 }
 
+// Compatibilité avec le reste du projet
+export function createSlug(text: string): string {
+  return slugify(text);
+}
+
 export default slugify;

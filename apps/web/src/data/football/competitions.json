@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Ligue 1",
+    "country": "France"
+  },
+  {
+    "name": "Ligue 2",
+    "country": "France"
+  },
+  {
+    "name": "Premier League",
+    "country": "Angleterre"
+  },
+  {
+    "name": "Championship",
+    "country": "Angleterre"
+  },
+  {
+    "name": "La Liga",
+    "country": "Espagne"
+  },
+  {
+    "name": "Serie A",
+    "country": "Italie"
+  },
+  {
+    "name": "Bundesliga",
+    "country": "Allemagne"
+  },
+  {
+    "name": "Champions League",
+    "country": "Europe"
+  },
+  {
+    "name": "Europa League",
+    "country": "Europe"
+  },
+  {
+    "name": "Conference League",
+    "country": "Europe"
+  }
+]

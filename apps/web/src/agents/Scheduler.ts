@@ -1,30 +1,39 @@
-import { RSSImportService } from "@/services/rss-import.service";
-import { NewsAgent } from "./news/NewsAgent";
+import { RSSAgent } from "./rss/RSSAgent";
+import { CleaningAgent } from "./cleaning/CleaningAgent";
+import { EntityAgent } from "./entity/EntityAgent";
+import { SEOAgent } from "./seo/SEOAgent";
+import { PublishAgent } from "./publish/PublishAgent";
 
 export class Scheduler {
   async run() {
-    console.log("==================================");
-    console.log("TRIBUNE SPORT IA");
-    console.log("Lancement des agents...");
-    console.log("==================================");
+    console.log("================================");
+    console.log("TRIBUNE SPORT");
+    console.log("Pipeline Football");
+    console.log("================================");
 
-    const rss = new RSSImportService();
-    const imported = await rss.import();
+    const rss = new RSSAgent();
+    const imported = await rss.execute();
 
-    console.log(`${imported} articles importés.`);
+    const cleaning = new CleaningAgent();
+    const cleaned = await cleaning.execute();
 
-    const news = new NewsAgent();
-    const processed = await news.process();
+    const entity = new EntityAgent();
+    const linked = await entity.execute();
 
-    console.log(`${processed} articles réécrits.`);
+    const seo = new SEOAgent();
+    const optimized = await seo.execute();
 
-    console.log("==================================");
-    console.log("Cycle terminé.");
-    console.log("==================================");
+    const publish = new PublishAgent();
+    const published = await publish.execute();
+
+    console.log("================================");
 
     return {
       imported,
-      processed,
+      cleaned,
+      linked,
+      optimized,
+      published,
     };
   }
 }

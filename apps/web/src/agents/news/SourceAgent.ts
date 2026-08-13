@@ -6,7 +6,7 @@ export class SourceAgent extends BaseAgent {
     super("SourceAgent");
   }
 
-  async execute(): Promise<void> {
+  async execute(): Promise<number> {
     this.log("Lecture des flux RSS...");
 
     const rss = new RSSService();
@@ -16,5 +16,7 @@ export class SourceAgent extends BaseAgent {
     console.table(articles);
 
     this.success(`${articles.length} articles récupérés.`);
+
+    return articles.length;
   }
 }

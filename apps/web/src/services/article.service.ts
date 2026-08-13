@@ -1,10 +1,10 @@
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export class ArticleService {
 
   async getPublishedArticles(limit: number = 20) {
 
-    return prisma.article.findMany({
+    return db.article.findMany({
 
       where: {
         published: true,
@@ -22,7 +22,7 @@ export class ArticleService {
 
   async getLatestArticles(limit: number = 20) {
 
-    return prisma.article.findMany({
+    return db.article.findMany({
 
       orderBy: {
         createdAt: "desc",
@@ -36,7 +36,7 @@ export class ArticleService {
 
   async getArticle(id: number) {
 
-    return prisma.article.findUnique({
+    return db.article.findUnique({
 
       where: {
         id,

@@ -1,43 +1,57 @@
-import { prisma } from "@/lib/prisma";
+import slugify from "slugify";
+import { db } from "@/lib/db";
 
 export class SEOAgent {
-  async process() {
-    const articles = await prisma.article.findMany({
+  async execute(): Promise<number> {
+    const articles = await db.article.findMany({
       where: {
-        published: false,
+        OR: [
+          { slug: null },
+          { seoTitle: null },
+          { seoDescription: null },
+        ],
       },
     });
 
+    let total = 0;
+
     for (const article of articles) {
-      await prisma.article.update({
+      let slug = slugify(article.title, {
+        lower: true,
+        strict: true,
+        trim: true,
+      });
+
+      let i = 2;
+
+      while (
+        await db.article.findFirst({
+          where: {
+            slug,
+            NOT: {
+              id: article.id,
+            },
+          },
+        })
+      ) {
+        slug = `${slug}-${i}`;
+        i++;
+      }
+
+      await db.article.update({
         where: {
           id: article.id,
         },
         data: {
-          seoTitle: this.createSeoTitle(article.title),
-          seoDescription: this.createDescription(article.summary),
-          slug: this.createSlug(article.title),
+          slug,
+          seoTitle: article.title,
+          seoDescription: article.summary.substring(0, 160),
         },
       });
+
+      total++;
     }
 
-    return articles.length;
-  }
-
-  private createSeoTitle(title: string) {
-    return `${title} | Tribune Sport`;
-  }
-
-  private createDescription(summary: string) {
-    return summary.substring(0, 155);
-  }
-
-  private createSlug(title: string) {
-    return title
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
+    return total;
   }
 }

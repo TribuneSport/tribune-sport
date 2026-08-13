@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
-import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+import { db } from "@/lib/db";
 
 type Props = {
   params: Promise<{
@@ -11,15 +11,16 @@ type Props = {
 
 function slugToCategory(slug: string) {
   const map: Record<string, string> = {
-    "ligue-1": "Ligue 1",
+    france: "France",
     mercato: "Mercato",
     europe: "Europe",
     international: "International",
-    psg: "PSG",
-    om: "OM",
-    ol: "OL",
-    lens: "Lens",
-    football: "Football",
+    "ligue-1": "Ligue 1",
+    "premier-league": "Premier League",
+    liga: "Liga",
+    "serie-a": "Serie A",
+    bundesliga: "Bundesliga",
+    "champions-league": "Champions League",
   };
 
   return map[slug] ?? slug.replace(/-/g, " ");
@@ -30,7 +31,7 @@ export default async function CategoryPage({ params }: Props) {
 
   const category = slugToCategory(slug);
 
-  const articles = await prisma.article.findMany({
+  const articles = await db.article.findMany({
     where: {
       published: true,
       category,
@@ -44,61 +45,133 @@ export default async function CategoryPage({ params }: Props) {
     notFound();
   }
 
-  return (
-    <main className="min-h-screen bg-slate-100">
+  const featured = articles[0];
+  const others = articles.slice(1);
 
-      <div className="mx-auto max-w-7xl py-10">
+  return (
+    <main className="bg-gray-100 min-h-screen">
+
+      <div className="mx-auto max-w-7xl px-4 py-8">
 
         <Link
           href="/"
-          className="mb-8 inline-flex rounded-xl bg-white px-5 py-3 shadow hover:bg-gray-100"
+          className="inline-flex rounded-xl border bg-white px-5 py-3 font-semibold shadow-sm transition hover:bg-gray-50"
         >
-          ← Accueil
+          ← Retour à l'accueil
         </Link>
 
-        <h1 className="mb-10 text-5xl font-extrabold">
-          {category}
-        </h1>
+        <header className="mt-8 mb-10">
 
-        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+          <p className="text-red-600 font-bold uppercase tracking-widest">
+            Catégorie
+          </p>
 
-          {articles.map((article) => (
+          <h1 className="mt-2 text-5xl font-black">
+            {category}
+          </h1>
 
-            <Link
-              key={article.id}
-              href={`/article/${article.slug}`}
-              className="overflow-hidden rounded-2xl bg-white shadow transition hover:-translate-y-1 hover:shadow-xl"
-            >
+          <p className="mt-4 text-lg text-gray-600">
+            {articles.length} article{articles.length > 1 ? "s" : ""} disponible
+            {articles.length > 1 ? "s" : ""}.
+          </p>
+
+        </header>
+
+        <section className="overflow-hidden rounded-3xl bg-white shadow-lg">
+
+          <div className="grid lg:grid-cols-2">
+
+            <div className="relative h-[420px]">
 
               <Image
-                src={article.image || "/placeholder.jpg"}
-                alt={article.title}
-                width={600}
-                height={350}
-                className="h-56 w-full object-cover"
+                src={featured.image || "/football.jpg"}
+                alt={featured.title}
+                fill
+                priority
+                className="object-cover"
               />
 
-              <div className="p-6">
+            </div>
 
-                <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
-                  {article.category}
-                </span>
+            <div className="flex flex-col justify-center p-10">
 
-                <h2 className="mt-4 text-2xl font-bold">
-                  {article.title}
-                </h2>
+              <span className="inline-flex w-fit rounded-full bg-red-100 px-4 py-2 text-sm font-bold text-red-700">
+                À la une
+              </span>
 
-                <p className="mt-4 line-clamp-3 text-gray-600">
-                  {article.summary}
-                </p>
+              <h2 className="mt-6 text-4xl font-black leading-tight">
+                {featured.title}
+              </h2>
 
-              </div>
+              <p className="mt-6 text-lg leading-8 text-gray-600">
+                {featured.summary}
+              </p>
 
-            </Link>
+              <Link
+                href={`/article/${featured.slug}`}
+                className="mt-8 inline-flex w-fit rounded-xl bg-red-700 px-8 py-4 font-bold text-white transition hover:bg-red-800"
+              >
+                Lire l'article
+              </Link>
 
-          ))}
+            </div>
 
-        </div>
+          </div>
+
+        </section>
+
+        <section className="mt-14">
+
+          <h2 className="mb-8 text-3xl font-black">
+            Tous les articles
+          </h2>
+
+          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+
+            {others.map((article) => (
+              <Link
+                key={article.id}
+                href={`/article/${article.slug}`}
+                className="group overflow-hidden rounded-3xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+              >
+
+                <div className="relative h-56">
+
+                  <Image
+                    src={article.image || "/football.jpg"}
+                    alt={article.title}
+                    fill
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
+
+                </div>
+
+                <div className="p-6">
+
+                  <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
+                    {article.category}
+                  </span>
+
+                  <h3 className="mt-4 text-2xl font-black leading-8">
+                    {article.title}
+                  </h3>
+
+                  <p className="mt-4 line-clamp-3 text-gray-600">
+                    {article.summary}
+                  </p>
+
+                  <p className="mt-6 font-bold text-red-700">
+                    Lire l'article →
+                  </p>
+
+                </div>
+
+              </Link>
+            ))}
+
+          </div>
+
+        </section>
 
       </div>
 

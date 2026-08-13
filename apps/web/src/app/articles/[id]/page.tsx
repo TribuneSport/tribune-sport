@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 
 type Props = {
@@ -11,7 +11,7 @@ export default async function ArticlePage({ params }: Props) {
 
   const { id } = await params;
 
-  const article = await prisma.article.findUnique({
+  const article = await db.article.findUnique({
 
     where: {
 

@@ -5,17 +5,17 @@ export abstract class BaseAgent {
     this.name = name;
   }
 
-  protected log(message: string) {
+  protected log(message: string): void {
     console.log(`[${this.name}] ${message}`);
   }
 
-  protected success(message: string) {
+  protected success(message: string): void {
     console.log(`✅ [${this.name}] ${message}`);
   }
 
-  protected error(message: string) {
+  protected error(message: string): void {
     console.error(`❌ [${this.name}] ${message}`);
   }
 
-  abstract execute(): Promise<void>;
+  abstract execute(): Promise<number>;
 }

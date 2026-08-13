@@ -1,0 +1,80 @@
+[
+  {
+    "name": "Paris Saint-Germain",
+    "country": "France",
+    "city": "Paris",
+    "founded": 1970
+  },
+  {
+    "name": "Olympique de Marseille",
+    "country": "France",
+    "city": "Marseille",
+    "founded": 1899
+  },
+  {
+    "name": "Olympique Lyonnais",
+    "country": "France",
+    "city": "Lyon",
+    "founded": 1950
+  },
+  {
+    "name": "AS Monaco",
+    "country": "Monaco",
+    "city": "Monaco",
+    "founded": 1924
+  },
+  {
+    "name": "LOSC Lille",
+    "country": "France",
+    "city": "Lille",
+    "founded": 1944
+  },
+  {
+    "name": "RC Lens",
+    "country": "France",
+    "city": "Lens",
+    "founded": 1906
+  },
+  {
+    "name": "OGC Nice",
+    "country": "France",
+    "city": "Nice",
+    "founded": 1904
+  },
+  {
+    "name": "Real Madrid",
+    "country": "Espagne",
+    "city": "Madrid",
+    "founded": 1902
+  },
+  {
+    "name": "FC Barcelone",
+    "country": "Espagne",
+    "city": "Barcelone",
+    "founded": 1899
+  },
+  {
+    "name": "Manchester City",
+    "country": "Angleterre",
+    "city": "Manchester",
+    "founded": 1880
+  },
+  {
+    "name": "Liverpool",
+    "country": "Angleterre",
+    "city": "Liverpool",
+    "founded": 1892
+  },
+  {
+    "name": "Bayern Munich",
+    "country": "Allemagne",
+    "city": "Munich",
+    "founded": 1900
+  },
+  {
+    "name": "Juventus",
+    "country": "Italie",
+    "city": "Turin",
+    "founded": 1897
+  }
+]

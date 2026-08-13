@@ -1,90 +1,61 @@
 import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
 import Hero from "@/components/Hero";
 import FeaturedArticle from "@/components/FeaturedArticle";
 import LatestNews from "@/components/LatestNews";
 import MostRead from "@/components/MostRead";
 import CategorySection from "@/components/CategorySection";
 import Footer from "@/components/Footer";
-import { ArticleService } from "@/services/article.service";
 
-export default async function Home() {
-  const service = new ArticleService();
-  const articles = await service.getLatestArticles(20);
+export const dynamic = "force-dynamic";
 
+export default function Home() {
   return (
-    <main className="flex min-h-screen bg-slate-100">
-      <Sidebar />
+    <main className="min-h-screen bg-gray-100">
 
-      <section className="flex-1">
-        <Header />
+      <Header />
 
-        <div className="mx-auto max-w-7xl p-8">
-          <Hero />
+      <div className="mx-auto max-w-7xl px-4 py-8">
 
-          <FeaturedArticle />
+        <Hero />
 
-          <div className="my-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-xl bg-white p-6 shadow">
-              <h3 className="text-gray-500">Articles</h3>
-              <p className="mt-2 text-3xl font-bold">
-                {articles.length}
-              </p>
-            </div>
+        <div className="mt-10 grid gap-10 lg:grid-cols-[2fr_380px]">
 
-            <div className="rounded-xl bg-white p-6 shadow">
-              <h3 className="text-gray-500">Brouillons</h3>
-              <p className="mt-2 text-3xl font-bold">
-                {articles.filter((a) => !a.published).length}
-              </p>
-            </div>
+          <section className="space-y-14">
 
-            <div className="rounded-xl bg-white p-6 shadow">
-              <h3 className="text-gray-500">Publiés</h3>
-              <p className="mt-2 text-3xl font-bold">
-                {articles.filter((a) => a.published).length}
-              </p>
-            </div>
+            <FeaturedArticle />
 
-            <div className="rounded-xl bg-white p-6 shadow">
-              <h3 className="text-gray-500">Catégories</h3>
-              <p className="mt-2 text-3xl font-bold">
-                {[...new Set(articles.map((a) => a.category))].length}
-              </p>
-            </div>
-          </div>
+            <LatestNews />
 
-          <div className="grid gap-8 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <LatestNews />
-            </div>
+            <CategorySection
+              title="🇫🇷 France"
+              category="France"
+            />
 
-            <MostRead />
-          </div>
+            <CategorySection
+              title="💰 Mercato"
+              category="Mercato"
+            />
 
-          <CategorySection
-            title="🇫🇷 Ligue 1"
-            category="Ligue 1"
-          />
+            <CategorySection
+              title="🌍 Europe"
+              category="Europe"
+            />
 
-          <CategorySection
-            title="💰 Mercato"
-            category="Mercato"
-          />
+            <CategorySection
+              title="🌎 International"
+              category="International"
+            />
 
-          <CategorySection
-            title="🌍 Europe"
-            category="Europe"
-          />
+          </section>
 
-          <CategorySection
-            title="🌎 International"
-            category="International"
-          />
+          <MostRead />
 
-          <Footer />
         </div>
-      </section>
+
+      </div>
+
+      <Footer />
+
     </main>
   );
 }

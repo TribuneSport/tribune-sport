@@ -1,13 +1,27 @@
 import { NextResponse } from "next/server";
-import { NewsAgent } from "@/agents/news/NewsAgent";
+import { Scheduler } from "@/agents/Scheduler";
 
 export async function GET() {
-  const agent = new NewsAgent();
+  try {
+    const scheduler = new Scheduler();
 
-  const processed = await agent.process();
+    const result = await scheduler.run();
 
-  return NextResponse.json({
-    success: true,
-    processed,
-  });
+    return NextResponse.json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: String(error),
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }

@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export class ArticleRepository {
   async findAll() {
-    return prisma.article.findMany({
+    return db.article.findMany({
       orderBy: {
         createdAt: "desc",
       },
@@ -10,7 +10,7 @@ export class ArticleRepository {
   }
 
   async findPublished() {
-    return prisma.article.findMany({
+    return db.article.findMany({
       where: {
         published: true,
       },
@@ -21,7 +21,7 @@ export class ArticleRepository {
   }
 
   async findDrafts() {
-    return prisma.article.findMany({
+    return db.article.findMany({
       where: {
         published: false,
       },
@@ -32,7 +32,7 @@ export class ArticleRepository {
   }
 
   async findById(id: number) {
-    return prisma.article.findUnique({
+    return db.article.findUnique({
       where: {
         id,
       },
@@ -40,7 +40,7 @@ export class ArticleRepository {
   }
 
   async publish(id: number) {
-    return prisma.article.update({
+    return db.article.update({
       where: {
         id,
       },
@@ -51,7 +51,7 @@ export class ArticleRepository {
   }
 
   async delete(id: number) {
-    return prisma.article.delete({
+    return db.article.delete({
       where: {
         id,
       },

@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export default async function MostRead() {
-  const articles = await prisma.article.findMany({
+  const articles = await db.article.findMany({
     where: {
       published: true,
     },
@@ -15,9 +15,9 @@ export default async function MostRead() {
   return (
     <aside className="space-y-8">
 
-      <div className="rounded-2xl bg-white p-6 shadow-lg">
+      <section className="rounded-3xl border bg-white p-6 shadow-sm">
 
-        <h2 className="mb-6 text-2xl font-bold">
+        <h2 className="mb-6 text-2xl font-black">
           🔥 Les plus lus
         </h2>
 
@@ -26,75 +26,87 @@ export default async function MostRead() {
           {articles.map((article, index) => (
             <Link
               key={article.id}
-              href={`/article/${article.id}`}
-              className="flex items-start gap-4 group"
+              href={`/article/${article.slug}`}
+              className="group flex items-start gap-4"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-700 font-bold text-white">
+
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-700 font-black text-white">
                 {index + 1}
               </div>
 
               <div>
 
-                <p className="text-xs font-semibold uppercase text-red-700">
+                <p className="text-xs font-bold uppercase tracking-wide text-red-700">
                   {article.category}
                 </p>
 
-                <h3 className="mt-1 font-semibold transition group-hover:text-red-700">
+                <h3 className="mt-1 font-semibold leading-6 transition group-hover:text-red-700">
                   {article.title}
                 </h3>
 
               </div>
+
             </Link>
           ))}
 
         </div>
 
-      </div>
+      </section>
 
-      <div className="rounded-2xl bg-white p-6 shadow-lg">
+      <section className="rounded-3xl border bg-white p-6 shadow-sm">
 
-        <h2 className="mb-4 text-2xl font-bold">
+        <h2 className="mb-5 text-2xl font-black">
           📈 Tendances
         </h2>
 
         <div className="flex flex-wrap gap-3">
 
-          <span className="rounded-full bg-red-100 px-4 py-2 text-sm font-semibold text-red-700">
-            #Mercato
-          </span>
-
-          <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700">
-            #PSG
-          </span>
-
-          <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
-            #Ligue1
-          </span>
-
-          <span className="rounded-full bg-yellow-100 px-4 py-2 text-sm font-semibold text-yellow-700">
-            #ChampionsLeague
-          </span>
-
-          <span className="rounded-full bg-purple-100 px-4 py-2 text-sm font-semibold text-purple-700">
-            #RealMadrid
-          </span>
+          {[
+            "Mercato",
+            "Ligue 1",
+            "Premier League",
+            "Liga",
+            "Serie A",
+            "Bundesliga",
+            "PSG",
+            "OM",
+            "Real Madrid",
+            "FC Barcelone",
+          ].map((tag) => (
+            <Link
+              key={tag}
+              href={`/recherche?q=${encodeURIComponent(tag)}`}
+              className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold transition hover:bg-red-700 hover:text-white"
+            >
+              #{tag}
+            </Link>
+          ))}
 
         </div>
 
-      </div>
+      </section>
 
-      <div className="rounded-2xl bg-gradient-to-br from-red-700 to-red-500 p-6 text-white shadow-xl">
+      <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-red-700 via-red-600 to-red-500 p-8 text-white shadow-xl">
 
-        <h2 className="text-2xl font-bold">
+        <h2 className="text-3xl font-black">
           Tribune Sport
         </h2>
 
-        <p className="mt-4 leading-7 text-red-100">
-          Toute l'actualité du football français et international,
-          les transferts, les résultats et les analyses en continu.
+        <p className="mt-5 leading-8 text-red-100">
+          Le média 100 % football.
+          Retrouvez toute l'actualité des grands championnats,
+          des compétitions européennes, du mercato et des sélections
+          nationales.
         </p>
 
-      </div>
+        <Link
+          href="/articles"
+          className="mt-8 inline-flex rounded-xl bg-white px-6 py-3 font-bold text-red-700 transition hover:bg-gray-100"
+        >
+          Voir toutes les actualités
+        </Link>
+
+      </section>
 
     </aside>
   );

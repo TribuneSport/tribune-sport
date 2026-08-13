@@ -1,11 +1,14 @@
-import { prisma } from "@/lib/prisma";
-import { AIService } from "@/services/ai.service";
+import { db } from "@/lib/db";
+import { BaseAgent } from "../base/BaseAgent";
+import { createSlug } from "@/lib/slug";
 
-export class NewsAgent {
-  async process() {
-    const ai = new AIService();
+export class NewsAgent extends BaseAgent {
+  constructor() {
+    super("NewsAgent");
+  }
 
-    const articles = await prisma.article.findMany({
+  async execute(): Promise<number> {
+    const articles = await db.article.findMany({
       where: {
         published: false,
       },
@@ -14,45 +17,51 @@ export class NewsAgent {
       },
     });
 
-    for (const article of articles) {
-      const rewritten = await ai.rewriteArticle({
-        title: this.cleanTitle(article.title),
-        summary: this.createSummary(article.summary),
-        content: this.createContent(article),
-      });
+    let processed = 0;
 
-      await prisma.article.update({
+    for (const article of articles) {
+      const title = this.cleanTitle(article.title);
+
+      await db.article.update({
         where: {
           id: article.id,
         },
-        data: rewritten,
+        data: {
+          title,
+          slug: article.slug ?? createSlug(title),
+          seoTitle:
+            article.seoTitle ??
+            `${title} | Tribune Sport`,
+          seoDescription:
+            article.seoDescription ??
+            this.createSeoDescription(article.summary),
+        },
       });
+
+      processed++;
     }
 
-    return articles.length;
+    this.success(`${processed} article(s) préparé(s).`);
+
+    return processed;
   }
 
-  private cleanTitle(title: string) {
+  private cleanTitle(title: string): string {
     return title
       .replace(/\|.*/g, "")
-      .replace(/- RMC Sport/g, "")
+      .replace(/- RMC Sport/gi, "")
+      .replace(/- L'Équipe/gi, "")
+      .replace(/- Foot Mercato/gi, "")
       .trim();
   }
 
-  private createSummary(summary: string) {
-    return summary.substring(0, 180);
-  }
+  private createSeoDescription(summary: string): string {
+    if (!summary) {
+      return "";
+    }
 
-  private createContent(article: any) {
-    return `
-# ${article.title}
-
-${article.summary}
-
-Cet article a été récupéré automatiquement par Tribune Sport.
-
-Source :
-${article.sourceUrl}
-`;
+    return summary.length > 155
+      ? summary.substring(0, 155) + "..."
+      : summary;
   }
 }

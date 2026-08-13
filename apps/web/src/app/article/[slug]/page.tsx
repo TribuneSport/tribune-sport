@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 type Props = {
   params: Promise<{
@@ -9,10 +10,66 @@ type Props = {
   }>;
 };
 
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata> {
+  const { slug } = await params;
+
+  const article = await db.article.findUnique({
+    where: {
+      slug,
+    },
+  });
+
+  if (!article) {
+    return {
+      title: "Article introuvable | Tribune Sport",
+    };
+  }
+
+  const title = `${article.title} | Tribune Sport`;
+
+  const description =
+    article.summary ||
+    "Toute l'actualité du football sur Tribune Sport.";
+
+  const image = article.image || "/football.jpg";
+
+  return {
+    title,
+    description,
+
+    alternates: {
+      canonical: `/article/${article.slug}`,
+    },
+
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      url: `https://tribunesport.fr/article/${article.slug}`,
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
+}
+
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params;
 
-  const article = await prisma.article.findUnique({
+  const article = await db.article.findUnique({
     where: {
       slug,
     },
@@ -22,7 +79,7 @@ export default async function ArticlePage({ params }: Props) {
     notFound();
   }
 
-  const related = await prisma.article.findMany({
+  const related = await db.article.findMany({
     where: {
       published: true,
       category: article.category,
@@ -36,54 +93,85 @@ export default async function ArticlePage({ params }: Props) {
     take: 3,
   });
 
-  return (
-    <main className="min-h-screen bg-slate-100">
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: article.title,
+    description: article.summary,
+    image: article.image,
+    datePublished: article.createdAt,
+    dateModified: article.updatedAt,
+    author: {
+      "@type": "Organization",
+      name: "Tribune Sport",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Tribune Sport",
+    },
+  };
 
-      <div className="mx-auto max-w-6xl py-10">
+  return (
+        <main className="bg-gray-100">
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd),
+        }}
+      />
+
+      <div className="mx-auto max-w-7xl px-4 py-8">
 
         <Link
           href="/"
-          className="mb-8 inline-flex items-center rounded-xl bg-white px-5 py-3 shadow hover:bg-gray-100"
+          className="inline-flex items-center rounded-xl border bg-white px-5 py-3 font-semibold shadow-sm transition hover:bg-gray-50"
         >
-          ← Retour
+          ← Retour aux actualités
         </Link>
 
-        <article className="overflow-hidden rounded-3xl bg-white shadow-xl">
+        <article className="mt-8 overflow-hidden rounded-3xl bg-white shadow-lg">
 
-          <div className="relative h-[500px]">
+          <div className="relative h-[320px] md:h-[500px]">
 
             <Image
-              src={article.image || "/placeholder.jpg"}
+              src={article.image || "/football.jpg"}
               alt={article.title}
               fill
               priority
               className="object-cover"
             />
 
-          </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-          <div className="p-12">
+            <div className="absolute bottom-0 left-0 w-full p-8 text-white">
 
-            <span className="rounded-full bg-red-100 px-4 py-2 font-bold text-red-700">
-              {article.category}
-            </span>
-
-            <h1 className="mt-6 text-5xl font-extrabold leading-tight">
-              {article.title}
-            </h1>
-
-            <div className="mt-5 flex gap-6 text-gray-500">
-
-              <span>
-                📅{" "}
-                {new Date(article.createdAt).toLocaleDateString("fr-FR")}
+              <span className="inline-flex rounded-full bg-red-600 px-4 py-2 text-sm font-bold">
+                {article.category}
               </span>
 
-              <span>⏱ Lecture 3 min</span>
+              <h1 className="mt-5 max-w-5xl text-4xl font-black leading-tight md:text-6xl">
+                {article.title}
+              </h1>
+
+              <div className="mt-6 flex flex-wrap gap-6 text-sm text-gray-200">
+
+                <span>
+                  📅{" "}
+                  {new Date(article.createdAt).toLocaleDateString("fr-FR")}
+                </span>
+
+                <span>⏱ Lecture 3 min</span>
+
+              </div>
 
             </div>
 
-            <p className="mt-8 text-xl leading-9 text-gray-700">
+          </div>
+
+          <div className="mx-auto max-w-4xl p-8 md:p-12">
+
+            <p className="border-l-4 border-red-600 pl-6 text-2xl leading-10 text-gray-700">
               {article.summary}
             </p>
 
@@ -91,21 +179,24 @@ export default async function ArticlePage({ params }: Props) {
               {article.content}
             </div>
 
-            <div className="mt-12 border-t pt-8">
+            {article.sourceUrl && (
+              <div className="mt-12 rounded-2xl bg-gray-50 p-6">
 
-              <h3 className="font-bold">
-                Source
-              </h3>
+                <p className="mb-2 font-bold">
+                  Source
+                </p>
 
-              <a
-                href={article.sourceUrl}
-                target="_blank"
-                className="text-blue-600 underline"
-              >
-                {article.sourceUrl}
-              </a>
+                <a
+                  href={article.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="break-all text-blue-700 hover:underline"
+                >
+                  {article.sourceUrl}
+                </a>
 
-            </div>
+              </div>
+            )}
 
           </div>
 
@@ -115,8 +206,8 @@ export default async function ArticlePage({ params }: Props) {
 
           <section className="mt-16">
 
-            <h2 className="mb-8 text-3xl font-bold">
-              Articles similaires
+            <h2 className="mb-8 text-3xl font-black">
+              À lire également
             </h2>
 
             <div className="grid gap-8 md:grid-cols-3">
@@ -126,24 +217,24 @@ export default async function ArticlePage({ params }: Props) {
                 <Link
                   key={item.id}
                   href={`/article/${item.slug}`}
-                  className="overflow-hidden rounded-2xl bg-white shadow hover:shadow-xl transition"
+                  className="overflow-hidden rounded-3xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
                 >
 
                   <Image
-                    src={item.image || "/placeholder.jpg"}
+                    src={item.image || "/football.jpg"}
                     alt={item.title}
-                    width={600}
-                    height={400}
-                    className="h-52 w-full object-cover"
+                    width={700}
+                    height={450}
+                    className="h-56 w-full object-cover"
                   />
 
-                  <div className="p-5">
+                  <div className="p-6">
 
-                    <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
+                    <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
                       {item.category}
                     </span>
 
-                    <h3 className="mt-3 text-xl font-bold">
+                    <h3 className="mt-4 text-xl font-black leading-7">
                       {item.title}
                     </h3>
 

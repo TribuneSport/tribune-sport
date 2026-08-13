@@ -4,15 +4,15 @@ import path from "path";
 
 export const runtime = "nodejs";
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const formData = await request.formData();
+    const data = await req.formData();
 
-    const file = formData.get("file") as File | null;
+    const file = data.get("file") as File | null;
 
     if (!file) {
       return NextResponse.json(
-        { error: "Aucun fichier reçu." },
+        { error: "Aucun fichier." },
         { status: 400 }
       );
     }
@@ -20,19 +20,27 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    const uploadDir = path.join(
+      process.cwd(),
+      "public",
+      "uploads"
+    );
 
     await mkdir(uploadDir, {
       recursive: true,
     });
 
-    const extension = file.name.split(".").pop();
+    const extension =
+      file.name.split(".").pop() || "jpg";
 
     const filename = `${Date.now()}-${Math.random()
       .toString(36)
       .substring(2, 10)}.${extension}`;
 
-    const filepath = path.join(uploadDir, filename);
+    const filepath = path.join(
+      uploadDir,
+      filename
+    );
 
     await writeFile(filepath, buffer);
 

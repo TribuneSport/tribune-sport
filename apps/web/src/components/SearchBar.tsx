@@ -1,28 +1,36 @@
 "use client";
 
+import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function SearchBar() {
+  const [value, setValue] = useState("");
   const router = useRouter();
-  const [search, setSearch] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  function submit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!search.trim()) return;
+    if (!value.trim()) return;
 
-    router.push(`/recherche?q=${encodeURIComponent(search)}`);
+    router.push(`/recherche?q=${encodeURIComponent(value)}`);
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full">
+    <form
+      onSubmit={submit}
+      className="relative w-full"
+    >
+      <Search
+        size={20}
+        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+      />
+
       <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="🔍 Rechercher un club, un joueur ou un article..."
-        className="w-full rounded-xl border border-gray-300 bg-gray-50 px-5 py-3 text-sm outline-none transition focus:border-red-600 focus:bg-white focus:ring-2 focus:ring-red-200"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Rechercher un club, un joueur, une compétition..."
+        className="w-full rounded-full border border-gray-300 bg-white py-3 pl-12 pr-4 outline-none transition focus:border-red-600"
       />
     </form>
   );
