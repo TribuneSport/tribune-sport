@@ -6,7 +6,7 @@ export class FootballSeeder {
   async execute() {
 
     console.log("====================================");
-    console.log("TRIBUNE SPORT");
+    console.log("Tribune Foot");
     console.log("FOOTBALL DATABASE");
     console.log("====================================");
 

@@ -7,7 +7,7 @@ export default function Sidebar() {
       <div className="border-b border-slate-800 p-6">
 
         <h1 className="text-3xl font-extrabold text-red-500">
-          Tribune Sport
+          Tribune Foot
         </h1>
 
         <p className="mt-2 text-sm text-slate-400">

@@ -21,7 +21,7 @@ export default async function FeaturedArticle() {
         </span>
 
         <h2 className="mt-6 text-4xl font-black">
-          Tribune Sport est prêt
+          Tribune Foot est prêt
         </h2>
 
         <p className="mt-4 text-lg text-gray-600">

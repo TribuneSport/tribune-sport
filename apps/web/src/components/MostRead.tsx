@@ -89,7 +89,7 @@ export default async function MostRead() {
       <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-red-700 via-red-600 to-red-500 p-8 text-white shadow-xl">
 
         <h2 className="text-3xl font-black">
-          Tribune Sport
+          Tribune Foot
         </h2>
 
         <p className="mt-5 leading-8 text-red-100">

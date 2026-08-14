@@ -54,7 +54,7 @@ export default async function AdminPage() {
             </h1>
 
             <p className="mt-3 text-lg text-gray-500">
-              Tableau de bord Tribune Sport
+              Tableau de bord Tribune Foot
             </p>
 
           </div>
@@ -274,7 +274,7 @@ export default async function AdminPage() {
             </h2>
 
             <p className="mt-3 text-gray-500">
-              Ouvrir Tribune Sport.
+              Ouvrir Tribune Foot.
             </p>
 
           </Link>

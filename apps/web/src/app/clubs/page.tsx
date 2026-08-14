@@ -27,7 +27,7 @@ export default async function ClubsPage() {
           </h1>
 
           <p className="mt-5 max-w-3xl text-lg text-gray-600">
-            Découvrez l'ensemble des clubs suivis par Tribune Sport, des grands
+            Découvrez l'ensemble des clubs suivis par Tribune Foot, des grands
             clubs français aux meilleures équipes européennes.
           </p>
 

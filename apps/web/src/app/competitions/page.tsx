@@ -27,7 +27,7 @@ export default async function CompetitionsPage() {
           </h1>
 
           <p className="mt-5 max-w-3xl text-lg text-gray-600">
-            Retrouvez toutes les compétitions suivies par Tribune Sport :
+            Retrouvez toutes les compétitions suivies par Tribune Foot :
             championnats nationaux, coupes européennes et compétitions
             internationales.
           </p>

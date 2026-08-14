@@ -5,8 +5,8 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://tribunesport.fr"),
 
   title: {
-    default: "Tribune Sport",
-    template: "%s | Tribune Sport",
+    default: "Tribune Foot",
+    template: "%s | Tribune Foot",
   },
 
   description:
@@ -23,18 +23,18 @@ export const metadata: Metadata = {
     "champions league",
     "actualité football",
     "transferts",
-    "tribune sport",
+    "Tribune Foot",
   ],
 
   authors: [
     {
-      name: "Tribune Sport",
+      name: "Tribune Foot",
     },
   ],
 
-  creator: "Tribune Sport",
+  creator: "Tribune Foot",
 
-  publisher: "Tribune Sport",
+  publisher: "Tribune Foot",
 
   alternates: {
     canonical: "/",
@@ -56,8 +56,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "fr_FR",
     url: "https://tribunesport.fr",
-    siteName: "Tribune Sport",
-    title: "Tribune Sport",
+    siteName: "Tribune Foot",
+    title: "Tribune Foot",
     description:
       "Toute l'actualité du football en continu.",
     images: [
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Tribune Sport",
+    title: "Tribune Foot",
     description:
       "Toute l'actualité du football en continu.",
     images: ["/og.jpg"],

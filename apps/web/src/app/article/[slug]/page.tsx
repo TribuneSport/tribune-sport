@@ -23,15 +23,15 @@ export async function generateMetadata({
 
   if (!article) {
     return {
-      title: "Article introuvable | Tribune Sport",
+      title: "Article introuvable | Tribune Foot",
     };
   }
 
-  const title = `${article.title} | Tribune Sport`;
+  const title = `${article.title} | Tribune Foot`;
 
   const description =
     article.summary ||
-    "Toute l'actualité du football sur Tribune Sport.";
+    "Toute l'actualité du football sur Tribune Foot.";
 
   const image = article.image || "/football.jpg";
 
@@ -103,11 +103,11 @@ export default async function ArticlePage({ params }: Props) {
     dateModified: article.updatedAt,
     author: {
       "@type": "Organization",
-      name: "Tribune Sport",
+      name: "Tribune Foot",
     },
     publisher: {
       "@type": "Organization",
-      name: "Tribune Sport",
+      name: "Tribune Foot",
     },
   };
 

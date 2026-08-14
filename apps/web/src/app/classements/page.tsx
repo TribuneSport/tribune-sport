@@ -64,7 +64,7 @@ export default async function ClassementsPage() {
 
           <p className="mt-5 max-w-3xl text-lg text-gray-600">
             Retrouvez les classements des différentes compétitions suivies
-            par Tribune Sport.
+            par Tribune Foot.
           </p>
 
         </header>

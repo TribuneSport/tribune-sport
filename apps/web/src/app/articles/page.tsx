@@ -39,7 +39,7 @@ export default async function ArticlesPage() {
         <header className="mb-10">
 
           <p className="font-bold uppercase tracking-widest text-red-600">
-            Tribune Sport
+            Tribune Foot
           </p>
 
           <h1 className="mt-3 text-5xl font-black">

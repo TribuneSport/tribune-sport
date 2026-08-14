@@ -31,7 +31,7 @@ export class NewsAgent extends BaseAgent {
           slug: article.slug ?? createSlug(title),
           seoTitle:
             article.seoTitle ??
-            `${title} | Tribune Sport`,
+            `${title} | Tribune Foot`,
           seoDescription:
             article.seoDescription ??
             this.createSeoDescription(article.summary),

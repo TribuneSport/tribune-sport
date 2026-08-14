@@ -35,7 +35,7 @@ export default async function PlayersPage() {
           </h1>
 
           <p className="mt-5 max-w-3xl text-lg text-gray-600">
-            Retrouvez les fiches des joueurs suivis par Tribune Sport avec
+            Retrouvez les fiches des joueurs suivis par Tribune Foot avec
             leur club, leur poste et leurs actualités.
           </p>
 

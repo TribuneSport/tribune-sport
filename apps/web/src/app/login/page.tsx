@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 
@@ -42,7 +42,7 @@ export default function LoginPage() {
       >
 
         <h1 className="mb-8 text-center text-3xl font-bold">
-          Tribune Sport
+          Tribune Foot
         </h1>
 
         <input

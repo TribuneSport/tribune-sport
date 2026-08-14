@@ -1,4 +1,4 @@
-import { RSSAgent } from "./rss/RSSAgent";
+﻿import { RSSAgent } from "./rss/RSSAgent";
 import { CleaningAgent } from "./cleaning/CleaningAgent";
 import { EntityAgent } from "./entity/EntityAgent";
 import { SEOAgent } from "./seo/SEOAgent";
@@ -7,7 +7,7 @@ import { PublishAgent } from "./publish/PublishAgent";
 export class Scheduler {
   async run() {
     console.log("================================");
-    console.log("TRIBUNE SPORT");
+    console.log("Tribune Foot");
     console.log("Pipeline Football");
     console.log("================================");
 

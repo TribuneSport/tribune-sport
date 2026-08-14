@@ -26,7 +26,7 @@ export default async function ArticlesPage() {
             </h1>
 
             <p className="mt-3 text-lg text-gray-500">
-              Administration des contenus de Tribune Sport
+              Administration des contenus de Tribune Foot
             </p>
           </div>
 

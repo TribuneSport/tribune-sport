@@ -36,7 +36,7 @@ export default function Footer() {
 
           <div>
             <h3 className="mb-4 font-bold uppercase tracking-wide">
-              Tribune Sport
+              Tribune Foot
             </h3>
 
             <ul className="space-y-3 text-sm text-gray-400">
@@ -61,7 +61,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 border-t border-neutral-800 pt-6 text-center text-sm text-gray-500">
-          © {year} Tribune Sport — Tous droits réservés.
+          © {year} Tribune Foot — Tous droits réservés.
         </div>
 
       </div>
