@@ -1,6 +1,8 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import Image from "next/image";
 import { db } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 
 export default async function ArticlesPage() {
   const articles = await db.article.findMany({
@@ -33,11 +35,9 @@ export default async function ArticlesPage() {
 
   return (
     <main className="bg-gray-100 min-h-screen">
-
       <div className="mx-auto max-w-7xl px-4 py-8">
 
         <header className="mb-10">
-
           <p className="font-bold uppercase tracking-widest text-red-600">
             Tribune Foot
           </p>
@@ -49,15 +49,12 @@ export default async function ArticlesPage() {
           <p className="mt-4 text-lg text-gray-600">
             Retrouvez toute l'actualité du football français et international.
           </p>
-
         </header>
 
         <section className="overflow-hidden rounded-3xl bg-white shadow-lg">
-
           <div className="grid lg:grid-cols-2">
 
             <div className="relative h-[420px]">
-
               <Image
                 src={featured.image || "/football.jpg"}
                 alt={featured.title}
@@ -65,7 +62,6 @@ export default async function ArticlesPage() {
                 priority
                 className="object-cover"
               />
-
             </div>
 
             <div className="flex flex-col justify-center p-10">
@@ -90,9 +86,7 @@ export default async function ArticlesPage() {
               </Link>
 
             </div>
-
           </div>
-
         </section>
 
         <section className="mt-14">
@@ -112,14 +106,12 @@ export default async function ArticlesPage() {
               >
 
                 <div className="relative h-56">
-
                   <Image
                     src={article.image || "/football.jpg"}
                     alt={article.title}
                     fill
                     className="object-cover transition duration-500 group-hover:scale-105"
                   />
-
                 </div>
 
                 <div className="p-6">
@@ -155,11 +147,9 @@ export default async function ArticlesPage() {
             ))}
 
           </div>
-
         </section>
 
       </div>
-
     </main>
   );
 }
