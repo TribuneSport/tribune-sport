@@ -1,257 +1,159 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { db } from "@/lib/db";
 
-type Props = {
+interface Props {
   params: Promise<{
     slug: string;
   }>;
-};
+}
+
+async function getArticle(slug: string) {
+  return db.article.findFirst({
+    where: {
+      slug,
+      published: true,
+    },
+    include: {
+      club: true,
+      player: true,
+      competition: true,
+    },
+  });
+}
 
 export async function generateMetadata({
   params,
 }: Props): Promise<Metadata> {
   const { slug } = await params;
 
-  const article = await db.article.findUnique({
-    where: {
-      slug,
-    },
-  });
+  const article = await getArticle(slug);
 
   if (!article) {
     return {
-      title: "Article introuvable | Tribune Foot",
+      title: "Article introuvable | Tribune Sport",
+      description: "Cet article n'existe pas ou n'est plus disponible.",
     };
   }
 
-  const title = `${article.title} | Tribune Foot`;
-
-  const description =
-    article.summary ||
-    "Toute l'actualité du football sur Tribune Foot.";
-
-  const image = article.image || "/football.jpg";
-
   return {
-    title,
-    description,
-
-    alternates: {
-      canonical: `/article/${article.slug}`,
-    },
-
+    title:
+      article.seoTitle ||
+      `${article.title} | Tribune Sport`,
+    description:
+      article.seoDescription ||
+      article.summary,
     openGraph: {
-      title,
-      description,
+      title:
+        article.seoTitle ||
+        article.title,
+      description:
+        article.seoDescription ||
+        article.summary,
       type: "article",
-      url: `https://tribunesport.fr/article/${article.slug}`,
-      images: [
-        {
-          url: image,
-          width: 1200,
-          height: 630,
-        },
-      ],
-    },
-
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [image],
+      images: article.image
+        ? [
+            {
+              url: article.image,
+            },
+          ]
+        : undefined,
     },
   };
 }
 
-export default async function ArticlePage({ params }: Props) {
+export default async function ArticlePage({
+  params,
+}: Props) {
   const { slug } = await params;
 
-  const article = await db.article.findUnique({
-    where: {
-      slug,
-    },
-  });
+  const article = await getArticle(slug);
 
   if (!article) {
     notFound();
   }
 
-  const related = await db.article.findMany({
-    where: {
-      published: true,
-      category: article.category,
-      id: {
-        not: article.id,
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 3,
-  });
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "NewsArticle",
-    headline: article.title,
-    description: article.summary,
-    image: article.image,
-    datePublished: article.createdAt,
-    dateModified: article.updatedAt,
-    author: {
-      "@type": "Organization",
-      name: "Tribune Foot",
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "Tribune Foot",
-    },
-  };
-
   return (
-        <main className="bg-gray-100">
+    <main className="min-h-screen bg-gray-50">
+      <article className="mx-auto max-w-5xl px-6 py-12">
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd),
-        }}
-      />
+        {/* Catégorie */}
+        <div className="mb-4">
+          <span className="inline-block rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
+            {article.category}
+          </span>
+        </div>
 
-      <div className="mx-auto max-w-7xl px-4 py-8">
+        {/* Titre */}
+        <h1 className="text-4xl font-extrabold leading-tight text-gray-900 md:text-5xl">
+          {article.title}
+        </h1>
 
-        <Link
-          href="/"
-          className="inline-flex items-center rounded-xl border bg-white px-5 py-3 font-semibold shadow-sm transition hover:bg-gray-50"
-        >
-          ← Retour aux actualités
-        </Link>
+        {/* Date */}
+        <div className="mt-4 text-sm text-gray-500">
+          Publié le{" "}
+          {new Intl.DateTimeFormat("fr-FR", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          }).format(article.createdAt)}
+        </div>
 
-        <article className="mt-8 overflow-hidden rounded-3xl bg-white shadow-lg">
-
-          <div className="relative h-[320px] md:h-[500px]">
-
-            <Image
-              src={article.image || "/football.jpg"}
+        {/* Image */}
+        {article.image && (
+          <div className="mt-8 overflow-hidden rounded-2xl bg-gray-200">
+            <img
+              src={article.image}
               alt={article.title}
-              fill
-              priority
-              className="object-cover"
+              className="h-auto max-h-[600px] w-full object-cover"
             />
-
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-
-            <div className="absolute bottom-0 left-0 w-full p-8 text-white">
-
-              <span className="inline-flex rounded-full bg-red-600 px-4 py-2 text-sm font-bold">
-                {article.category}
-              </span>
-
-              <h1 className="mt-5 max-w-5xl text-4xl font-black leading-tight md:text-6xl">
-                {article.title}
-              </h1>
-
-              <div className="mt-6 flex flex-wrap gap-6 text-sm text-gray-200">
-
-                <span>
-                  📅{" "}
-                  {new Date(article.createdAt).toLocaleDateString("fr-FR")}
-                </span>
-
-                <span>⏱ Lecture 3 min</span>
-
-              </div>
-
-            </div>
-
           </div>
-
-          <div className="mx-auto max-w-4xl p-8 md:p-12">
-
-            <p className="border-l-4 border-red-600 pl-6 text-2xl leading-10 text-gray-700">
-              {article.summary}
-            </p>
-
-            <div className="prose prose-lg mt-12 max-w-none whitespace-pre-wrap">
-              {article.content}
-            </div>
-
-            {article.sourceUrl && (
-              <div className="mt-12 rounded-2xl bg-gray-50 p-6">
-
-                <p className="mb-2 font-bold">
-                  Source
-                </p>
-
-                <a
-                  href={article.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="break-all text-blue-700 hover:underline"
-                >
-                  {article.sourceUrl}
-                </a>
-
-              </div>
-            )}
-
-          </div>
-
-        </article>
-
-        {related.length > 0 && (
-
-          <section className="mt-16">
-
-            <h2 className="mb-8 text-3xl font-black">
-              À lire également
-            </h2>
-
-            <div className="grid gap-8 md:grid-cols-3">
-
-              {related.map((item) => (
-
-                <Link
-                  key={item.id}
-                  href={`/article/${item.slug}`}
-                  className="overflow-hidden rounded-3xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
-                >
-
-                  <Image
-                    src={item.image || "/football.jpg"}
-                    alt={item.title}
-                    width={700}
-                    height={450}
-                    className="h-56 w-full object-cover"
-                  />
-
-                  <div className="p-6">
-
-                    <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
-                      {item.category}
-                    </span>
-
-                    <h3 className="mt-4 text-xl font-black leading-7">
-                      {item.title}
-                    </h3>
-
-                  </div>
-
-                </Link>
-
-              ))}
-
-            </div>
-
-          </section>
-
         )}
 
-      </div>
+        {/* Résumé */}
+        {article.summary && (
+          <div className="mt-8 rounded-2xl border-l-4 border-green-600 bg-white p-6 shadow-sm">
+            <p className="text-xl font-medium leading-relaxed text-gray-700">
+              {article.summary}
+            </p>
+          </div>
+        )}
 
+        {/* Contenu */}
+        <div
+          className="
+            article-content
+            mt-10
+            rounded-2xl
+            bg-white
+            p-6
+            shadow-sm
+            md:p-10
+          "
+          dangerouslySetInnerHTML={{
+            __html: article.content,
+          }}
+        />
+
+        {/* Source */}
+        {article.sourceUrl && (
+          <div className="mt-8 border-t pt-6">
+            <p className="text-sm text-gray-500">
+              Source :
+            </p>
+
+            <a
+              href={article.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-block break-all text-sm text-blue-600 hover:underline"
+            >
+              {article.sourceUrl}
+            </a>
+          </div>
+        )}
+
+      </article>
     </main>
   );
 }
