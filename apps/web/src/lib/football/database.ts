@@ -3,19 +3,69 @@ import { db } from "@/lib/db";
 export class FootballDatabase {
   async getClubBySlug(slug: string) {
     return db.club.findUnique({
-      where: { slug },
+      where: {
+        slug,
+      },
       include: {
         articles: true,
         players: true,
-        homeMatches: true,
-        awayMatches: true,
+
+        homeMatches: {
+          include: {
+            awayClub: true,
+            competition: true,
+          },
+        },
+
+        awayMatches: {
+          include: {
+            homeClub: true,
+            competition: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getClubByName(name: string) {
+    return db.club.findUnique({
+      where: {
+        name,
+      },
+      include: {
+        articles: true,
+        players: true,
+
+        homeMatches: {
+          include: {
+            awayClub: true,
+            competition: true,
+          },
+        },
+
+        awayMatches: {
+          include: {
+            homeClub: true,
+            competition: true,
+          },
+        },
+      },
+    });
+  }
+
+  async getClubByExternalId(externalId: number) {
+    return db.club.findUnique({
+      where: {
+        externalId,
       },
     });
   }
 
   async getCompetitionBySlug(slug: string) {
     return db.competition.findUnique({
-      where: { slug },
+      where: {
+        slug,
+      },
       include: {
         articles: true,
         matches: true,
@@ -25,7 +75,9 @@ export class FootballDatabase {
 
   async getPlayerBySlug(slug: string) {
     return db.player.findUnique({
-      where: { slug },
+      where: {
+        slug,
+      },
       include: {
         articles: true,
         club: true,
@@ -34,6 +86,7 @@ export class FootballDatabase {
   }
 
   async createClub(data: {
+    externalId: number;
     name: string;
     slug: string;
     country: string;
@@ -44,12 +97,58 @@ export class FootballDatabase {
     banner?: string;
     description?: string;
   }) {
-    return db.club.upsert({
+    const existingByExternalId = await db.club.findUnique({
       where: {
-        slug: data.slug,
+        externalId: data.externalId,
       },
-      update: data,
-      create: data,
+    });
+
+    if (existingByExternalId) {
+      return db.club.update({
+        where: {
+          id: existingByExternalId.id,
+        },
+        data: {
+          name: data.name,
+          slug: data.slug,
+          country: data.country,
+          city: data.city,
+          stadium: data.stadium,
+          founded: data.founded,
+          logo: data.logo,
+          banner: data.banner,
+          description: data.description,
+        },
+      });
+    }
+
+    const existingByName = await db.club.findUnique({
+      where: {
+        name: data.name,
+      },
+    });
+
+    if (existingByName) {
+      return db.club.update({
+        where: {
+          id: existingByName.id,
+        },
+        data: {
+          externalId: data.externalId,
+          slug: data.slug,
+          country: data.country,
+          city: data.city,
+          stadium: data.stadium,
+          founded: data.founded,
+          logo: data.logo,
+          banner: data.banner,
+          description: data.description,
+        },
+      });
+    }
+
+    return db.club.create({
+      data,
     });
   }
 
@@ -74,6 +173,7 @@ export class FootballDatabase {
     lastname: string;
     slug: string;
     nationality?: string;
+    birthDate?: Date;
     position?: string;
     number?: number;
     photo?: string;
@@ -83,7 +183,57 @@ export class FootballDatabase {
       where: {
         slug: data.slug,
       },
-      update: data,
+
+      update: {
+        firstname: data.firstname,
+        lastname: data.lastname,
+        nationality: data.nationality,
+        birthDate: data.birthDate,
+        position: data.position,
+        number: data.number,
+        photo: data.photo,
+        clubId: data.clubId,
+      },
+
+      create: {
+        firstname: data.firstname,
+        lastname: data.lastname,
+        slug: data.slug,
+        nationality: data.nationality,
+        birthDate: data.birthDate,
+        position: data.position,
+        number: data.number,
+        photo: data.photo,
+        clubId: data.clubId,
+      },
+    });
+  }
+
+  async createMatch(data: {
+    competitionId: number;
+    homeClubId: number;
+    awayClubId: number;
+    matchDate: Date;
+    homeScore?: number;
+    awayScore?: number;
+    status: string;
+  }) {
+    return db.match.upsert({
+      where: {
+        competitionId_homeClubId_awayClubId_matchDate: {
+          competitionId: data.competitionId,
+          homeClubId: data.homeClubId,
+          awayClubId: data.awayClubId,
+          matchDate: data.matchDate,
+        },
+      },
+
+      update: {
+        homeScore: data.homeScore,
+        awayScore: data.awayScore,
+        status: data.status,
+      },
+
       create: data,
     });
   }

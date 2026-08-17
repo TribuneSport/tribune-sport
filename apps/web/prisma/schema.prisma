@@ -46,6 +46,8 @@ model Article {
 model Club {
   id Int @id @default(autoincrement())
 
+  externalId Int? @unique
+
   name String @unique
   slug String @unique
 
@@ -139,6 +141,10 @@ model Match {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([competitionId, homeClubId, awayClubId, matchDate])
+  @@index([competitionId])
+  @@index([homeClubId])
+  @@index([awayClubId])
   @@index([matchDate])
 }
 

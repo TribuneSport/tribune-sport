@@ -6,21 +6,46 @@ export default function FootballSeederButton() {
   const [loading, setLoading] = useState(false);
 
   async function runSeeder() {
-    try {
-      setLoading(true);
+    if (loading) return;
 
-      const response = await fetch("/api/football/init", {
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/football/seed", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
 
+      const text = await response.text();
+
       if (!response.ok) {
-        throw new Error("Erreur lors de l'initialisation");
+        throw new Error(
+          `Erreur lors de l'initialisation (${response.status}) : ${text}`
+        );
       }
 
-      alert("Base Football initialisée.");
+      let data: any = null;
+
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = null;
+      }
+
+      alert(
+        data?.message ||
+          "Base Football initialisée avec succès."
+      );
     } catch (error) {
-      console.error(error);
-      alert("Erreur lors de l'initialisation de la base Football.");
+      console.error("Erreur lors de l'initialisation :", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Erreur lors de l'initialisation."
+      );
     } finally {
       setLoading(false);
     }
@@ -28,11 +53,12 @@ export default function FootballSeederButton() {
 
   return (
     <button
+      type="button"
       onClick={runSeeder}
       disabled={loading}
-      className="rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
+      className="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {loading ? "Import..." : "Initialiser la base Football"}
+      {loading ? "Initialisation..." : "Initialiser la base Football"}
     </button>
   );
 }
