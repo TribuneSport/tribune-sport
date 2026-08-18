@@ -6,6 +6,7 @@ type RSSItem = {
   content?: string;
   link?: string;
   pubDate?: string;
+
   enclosure?: {
     url?: string;
     type?: string;
@@ -102,7 +103,20 @@ export class RSSService {
             item.content?.trim() ||
             "";
 
-          const image = this.extractImage(item);
+          /*
+           * 1. On cherche d'abord l'image directement
+           *    fournie par le flux RSS.
+           */
+          let image = this.extractImage(item);
+
+          /*
+           * 2. Si le RSS ne fournit aucune image,
+           *    on tente de récupérer og:image sur
+           *    la page originale.
+           */
+          if (!image) {
+            image = await this.extractOgImage(link);
+          }
 
           articles.push({
             club: feed.club,
@@ -151,5 +165,68 @@ export class RSSService {
     }
 
     return "";
+  }
+
+  private async extractOgImage(url: string): Promise<string> {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (compatible; TribuneFoot/1.0)",
+          Accept: "text/html,application/xhtml+xml",
+        },
+        signal: AbortSignal.timeout(5000),
+      });
+
+      if (!response.ok) {
+        return "";
+      }
+
+      const html = await response.text();
+
+      /*
+       * Recherche d'un og:image classique :
+       *
+       * <meta property="og:image" content="...">
+       *
+       * ou :
+       *
+       * <meta content="..." property="og:image">
+       */
+
+      const ogImageMatch =
+        html.match(
+          /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["'][^>]*>/i
+        ) ||
+        html.match(
+          /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["'][^>]*>/i
+        );
+
+      if (!ogImageMatch?.[1]) {
+        return "";
+      }
+
+      const imageUrl = ogImageMatch[1].trim();
+
+      if (!imageUrl) {
+        return "";
+      }
+
+      /*
+       * Si l'image est relative, on la transforme
+       * en URL absolue.
+       */
+      try {
+        return new URL(imageUrl, url).toString();
+      } catch {
+        return "";
+      }
+    } catch (error) {
+      console.warn(
+        `⚠️ Impossible de récupérer l'image : ${url}`
+      );
+
+      return "";
+    }
   }
 }

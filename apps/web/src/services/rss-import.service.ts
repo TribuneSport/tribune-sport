@@ -12,6 +12,7 @@ export class RSSImportService {
 
     let imported = 0;
     let duplicates = 0;
+    let updatedImages = 0;
     let nonFrench = 0;
     let invalid = 0;
 
@@ -43,13 +44,6 @@ export class RSSImportService {
       if (textToAnalyze.length >= 80) {
         const language = franc(textToAnalyze);
 
-        /*
-         * Les flux francophones sont prioritaires.
-         *
-         * Les textes trop courts ne sont pas filtrés car
-         * franc peut être imprécis sur quelques mots.
-         */
-
         if (language !== "fra") {
           console.log(
             `🌍 Article ignoré (non français) : ${title}`
@@ -62,10 +56,8 @@ export class RSSImportService {
 
       /*
        * ---------------------------------------------------------
-       * 2. ANTI-DOUBLON
+       * 2. ANTI-DOUBLON + RÉCUPÉRATION DES IMAGES MANQUANTES
        * ---------------------------------------------------------
-       *
-       * sourceUrl est unique dans Prisma.
        */
 
       const existing = await db.article.findUnique({
@@ -75,11 +67,33 @@ export class RSSImportService {
       });
 
       if (existing) {
-        duplicates++;
+        /*
+         * Si l'article existe déjà mais n'a aucune image,
+         * on utilise automatiquement l'image récupérée
+         * depuis le RSS ou og:image.
+         */
+        if (!existing.image && article.image) {
+          await db.article.update({
+            where: {
+              id: existing.id,
+            },
+            data: {
+              image: article.image,
+            },
+          });
 
-        console.log(
-          `↩️ Déjà présent : ${title}`
-        );
+          updatedImages++;
+
+          console.log(
+            `🖼️ Image ajoutée à l'article existant : ${title}`
+          );
+        } else {
+          duplicates++;
+
+          console.log(
+            `↩️ Déjà présent : ${title}`
+          );
+        }
 
         continue;
       }
@@ -123,8 +137,7 @@ export class RSSImportService {
        * 5. CRÉATION DU BROUILLON
        * ---------------------------------------------------------
        *
-       * IMPORTANT :
-       * aucun article RSS n'est publié automatiquement.
+       * Aucun article RSS n'est publié automatiquement.
        */
 
       await db.article.create({
@@ -133,16 +146,14 @@ export class RSSImportService {
 
           summary,
 
-          /*
-           * Pour l'instant nous utilisons le résumé comme contenu.
-           *
-           * L'étape suivante pourra améliorer cette partie
-           * avec la reformulation et l'enrichissement éditorial.
-           */
           content: summary,
 
           category,
 
+          /*
+           * L'image est maintenant récupérée automatiquement
+           * depuis le RSS ou depuis og:image.
+           */
           image: article.image || "",
 
           sourceUrl: article.link,
@@ -171,6 +182,7 @@ export class RSSImportService {
     console.log("================================");
     console.log(`✅ Nouveaux brouillons : ${imported}`);
     console.log(`↩️ Doublons : ${duplicates}`);
+    console.log(`🖼️ Images mises à jour : ${updatedImages}`);
     console.log(`🌍 Non français : ${nonFrench}`);
     console.log(`⚠️ Invalides : ${invalid}`);
     console.log("================================");
