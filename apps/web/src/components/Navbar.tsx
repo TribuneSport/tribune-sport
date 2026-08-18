@@ -14,13 +14,13 @@ export default function Navbar() {
   return (
     <nav className="border-b bg-white">
 
-      <div className="mx-auto flex max-w-7xl gap-8 overflow-x-auto px-4 py-4">
+      <div className="mx-auto flex max-w-7xl items-center gap-7 overflow-x-auto px-4 py-3">
 
         {links.map(([label, href]) => (
           <Link
             key={href}
             href={href}
-            className="whitespace-nowrap font-semibold transition hover:text-red-600"
+            className="whitespace-nowrap text-sm font-bold text-gray-900 transition hover:text-red-600"
           >
             {label}
           </Link>

@@ -10,9 +10,24 @@ type RSSItem = {
     url?: string;
     type?: string;
   };
+
+  mediaContent?: {
+    url?: string;
+    $?: {
+      url?: string;
+    };
+  };
+
+  mediaThumbnail?: {
+    url?: string;
+    $?: {
+      url?: string;
+    };
+  };
 };
 
 type RSSFeed = {
+  name: string;
   club: string;
   url: string;
 };
@@ -30,76 +45,111 @@ export class RSSService {
   async getSources() {
     const feeds: RSSFeed[] = [
       {
+        name: "Le Figaro Football",
         club: "Football",
         url: "https://www.lefigaro.fr/rss/figaro_football.xml",
       },
 
       {
+        name: "UEFA",
+        club: "UEFA",
+        url: "https://www.uefa.com/rssfeed/news/rss.xml",
+      },
+
+      {
+        name: "BBC Sport Football",
         club: "Football",
         url: "https://feeds.bbci.co.uk/sport/football/rss.xml",
       },
 
       {
+        name: "The Guardian Football",
         club: "Football",
         url: "https://www.theguardian.com/football/rss",
       },
-
-      {
-        club: "UEFA",
-        url: "https://www.uefa.com/rssfeed/news/rss.xml",
-      },
     ];
 
-    const articles: any[] = [];
+    const articles: Array<{
+      club: string;
+      sourceName: string;
+      title: string;
+      description: string;
+      link: string;
+      pubDate: string;
+      image: string;
+    }> = [];
 
     for (const feed of feeds) {
       try {
+        console.log(`📡 RSS : ${feed.name}`);
+
         const rss = await parser.parseURL(feed.url);
 
+        console.log(
+          `   → ${rss.items.length} éléments récupérés`
+        );
+
         for (const item of rss.items) {
-          const mediaContent = (item as any).mediaContent;
-          const mediaThumbnail = (item as any).mediaThumbnail;
+          const title = item.title?.trim() ?? "";
+          const link = item.link?.trim() ?? "";
 
-          let image = "";
-
-          if (mediaContent?.$?.url) {
-            image = mediaContent.$.url;
-          } else if (mediaContent?.url) {
-            image = mediaContent.url;
-          } else if (mediaThumbnail?.$?.url) {
-            image = mediaThumbnail.$.url;
-          } else if (mediaThumbnail?.url) {
-            image = mediaThumbnail.url;
-          } else if (item.enclosure?.url) {
-            image = item.enclosure.url;
+          if (!title || !link) {
+            continue;
           }
+
+          const description =
+            item.contentSnippet?.trim() ||
+            item.content?.trim() ||
+            "";
+
+          const image = this.extractImage(item);
 
           articles.push({
             club: feed.club,
-
-            title: item.title ?? "",
-
-            description:
-              item.contentSnippet ??
-              item.content ??
-              "",
-
-            link: item.link ?? "",
-
+            sourceName: feed.name,
+            title,
+            description,
+            link,
             pubDate: item.pubDate ?? "",
-
             image,
           });
         }
-      } catch (e) {
+      } catch (error) {
         console.error(
-          "Flux RSS indisponible :",
-          feed.url,
-          e
+          `❌ Flux RSS indisponible : ${feed.name}`,
+          error
         );
       }
     }
 
+    console.log(
+      `📰 Total RSS récupéré : ${articles.length} articles`
+    );
+
     return articles;
+  }
+
+  private extractImage(item: RSSItem): string {
+    if (item.mediaContent?.$?.url) {
+      return item.mediaContent.$.url;
+    }
+
+    if (item.mediaContent?.url) {
+      return item.mediaContent.url;
+    }
+
+    if (item.mediaThumbnail?.$?.url) {
+      return item.mediaThumbnail.$.url;
+    }
+
+    if (item.mediaThumbnail?.url) {
+      return item.mediaThumbnail.url;
+    }
+
+    if (item.enclosure?.url) {
+      return item.enclosure.url;
+    }
+
+    return "";
   }
 }

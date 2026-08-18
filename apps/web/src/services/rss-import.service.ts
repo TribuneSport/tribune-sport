@@ -11,45 +11,61 @@ export class RSSImportService {
     const articles = await rssService.getSources();
 
     let imported = 0;
+    let duplicates = 0;
+    let nonFrench = 0;
+    let invalid = 0;
+
+    console.log("");
+    console.log("📰 Démarrage de l'import RSS...");
+    console.log("");
 
     for (const article of articles) {
-      if (!article.link) {
+      if (!article.link || !article.title) {
+        invalid++;
         continue;
       }
 
-      const title = article.title?.trim() || "Sans titre";
+      const title = article.title.trim();
 
       const summary =
-        article.description?.trim() || "Aucun résumé disponible.";
+        article.description?.trim() ||
+        "Aucun résumé disponible.";
 
       /*
        * ---------------------------------------------------------
-       * 1. Vérification de la langue
+       * 1. FILTRE DE LANGUE
        * ---------------------------------------------------------
-       *
-       * Les flux que nous utilisons sont francophones.
-       *
-       * franc peut être imprécis sur les textes très courts.
-       * On ne l'utilise donc que lorsque nous avons suffisamment
-       * de texte pour effectuer une détection raisonnable.
        */
 
-      const textToAnalyze = `${title} ${summary}`.trim();
+      const textToAnalyze =
+        `${title} ${summary}`.trim();
 
-      if (textToAnalyze.length >= 50) {
+      if (textToAnalyze.length >= 80) {
         const language = franc(textToAnalyze);
 
+        /*
+         * Les flux francophones sont prioritaires.
+         *
+         * Les textes trop courts ne sont pas filtrés car
+         * franc peut être imprécis sur quelques mots.
+         */
+
         if (language !== "fra") {
+          console.log(
+            `🌍 Article ignoré (non français) : ${title}`
+          );
+
+          nonFrench++;
           continue;
         }
       }
 
       /*
        * ---------------------------------------------------------
-       * 2. Vérification du doublon
+       * 2. ANTI-DOUBLON
        * ---------------------------------------------------------
        *
-       * Le lien original est notre identifiant de source.
+       * sourceUrl est unique dans Prisma.
        */
 
       const existing = await db.article.findUnique({
@@ -59,16 +75,24 @@ export class RSSImportService {
       });
 
       if (existing) {
+        duplicates++;
+
+        console.log(
+          `↩️ Déjà présent : ${title}`
+        );
+
         continue;
       }
 
       /*
        * ---------------------------------------------------------
-       * 3. Création du slug
+       * 3. SLUG
        * ---------------------------------------------------------
        */
 
-      const baseSlug = createSlug(title);
+      const baseSlug =
+        createSlug(title) ||
+        `article-${Date.now()}`;
 
       let slug = baseSlug;
       let counter = 2;
@@ -86,10 +110,21 @@ export class RSSImportService {
 
       /*
        * ---------------------------------------------------------
-       * 4. Création de l'article en BROUILLON
+       * 4. CATÉGORIE
+       * ---------------------------------------------------------
+       */
+
+      const category = normalizeCategory(
+        article.club
+      );
+
+      /*
+       * ---------------------------------------------------------
+       * 5. CRÉATION DU BROUILLON
        * ---------------------------------------------------------
        *
-       * Aucun article importé automatiquement n'est publié.
+       * IMPORTANT :
+       * aucun article RSS n'est publié automatiquement.
        */
 
       await db.article.create({
@@ -99,43 +134,47 @@ export class RSSImportService {
           summary,
 
           /*
-           * Pour l'instant nous conservons le résumé dans le
-           * contenu.
+           * Pour l'instant nous utilisons le résumé comme contenu.
            *
-           * Plus tard, nous pourrons ajouter une étape de
-           * traduction / reformulation avant publication.
+           * L'étape suivante pourra améliorer cette partie
+           * avec la reformulation et l'enrichissement éditorial.
            */
           content: summary,
 
-          category: normalizeCategory(article.club),
+          category,
 
-          /*
-           * L'image sera ajoutée lorsque le RSSService récupérera
-           * correctement le champ media:content.
-           */
           image: article.image || "",
 
-          /*
-           * Source originale conservée.
-           */
           sourceUrl: article.link,
 
-          /*
-           * IMPORTANT :
-           * les imports RSS restent toujours en brouillon.
-           */
           published: false,
 
           seoTitle: title,
 
-          seoDescription: summary.substring(0, 160),
+          seoDescription:
+            summary.substring(0, 160),
 
           slug,
         },
       });
 
       imported++;
+
+      console.log(
+        `✅ Brouillon créé : ${title}`
+      );
     }
+
+    console.log("");
+    console.log("================================");
+    console.log("📊 RÉSULTAT IMPORT RSS");
+    console.log("================================");
+    console.log(`✅ Nouveaux brouillons : ${imported}`);
+    console.log(`↩️ Doublons : ${duplicates}`);
+    console.log(`🌍 Non français : ${nonFrench}`);
+    console.log(`⚠️ Invalides : ${invalid}`);
+    console.log("================================");
+    console.log("");
 
     return imported;
   }

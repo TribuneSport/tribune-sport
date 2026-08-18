@@ -1,141 +1,88 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { db } from "@/lib/db";
 
-type Article = {
-  id: number;
-  slug: string;
-  title: string;
-  summary: string;
-  category: string;
-  image: string | null;
-  createdAt: string;
-};
+export const dynamic = "force-dynamic";
 
-export default function LatestNews() {
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/articles/latest")
-      .then((res) => res.json())
-      .then((data) => {
-        setArticles(data);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <section className="mt-12">
-
-        <div className="mb-8 flex items-center justify-between">
-
-          <h2 className="text-3xl font-black">
-            Dernières actualités
-          </h2>
-
-          <div className="h-5 w-20 animate-pulse rounded bg-gray-200" />
-
-        </div>
-
-        <div className="space-y-6">
-
-          {[1, 2, 3, 4].map((item) => (
-            <div
-              key={item}
-              className="h-52 animate-pulse rounded-3xl bg-gray-200"
-            />
-          ))}
-
-        </div>
-
-      </section>
-    );
-  }
+export default async function LatestNews() {
+  const articles = await db.article.findMany({
+    where: {
+      published: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 5,
+  });
 
   return (
-    <section className="mt-12">
+    <section>
+      <div className="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <p className="mb-1 text-[11px] font-black uppercase tracking-[0.16em] text-red-600">
+            Tribune Foot
+          </p>
 
-      <div className="mb-8 flex items-center justify-between">
-
-        <h2 className="text-3xl font-black">
-          Dernières actualités
-        </h2>
+          <h2 className="text-2xl font-black tracking-tight text-slate-950">
+            Dernières actualités
+          </h2>
+        </div>
 
         <Link
           href="/articles"
-          className="font-bold text-red-700 hover:underline"
+          className="shrink-0 text-sm font-bold text-red-600 transition-colors hover:text-red-800"
         >
-          Voir tout →
+          Voir les actualités →
         </Link>
-
       </div>
 
-      <div className="space-y-6">
+      {articles.length === 0 ? (
+        <div className="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-slate-200">
+          <h3 className="text-lg font-bold text-slate-900">
+            Aucune actualité disponible
+          </h3>
 
-        {articles.map((article) => (
-          <Link
-            key={article.id}
-            href={`/article/${article.slug}`}
-            className="group block overflow-hidden rounded-3xl border bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
-          >
-
-            <div className="grid md:grid-cols-[300px_1fr]">
-
-              <div className="relative h-64 md:h-full">
-
+          <p className="mt-2 text-sm text-slate-500">
+            Les prochaines publications apparaîtront ici.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
+          {articles.map((article) => (
+            <Link
+              key={article.id}
+              href={`/article/${article.slug}`}
+              className="group overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+            >
+              <div className="relative h-36 overflow-hidden bg-slate-100 sm:h-40">
                 <Image
                   src={article.image || "/football.jpg"}
                   alt={article.title}
                   fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                   className="object-cover transition duration-500 group-hover:scale-105"
                 />
 
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent" />
               </div>
 
-              <div className="flex flex-col justify-between p-8">
+              <div className="p-3.5">
+                <span className="text-[10px] font-black uppercase tracking-wide text-red-600">
+                  {article.category}
+                </span>
 
-                <div>
+                <h3 className="mt-1.5 line-clamp-3 text-sm font-bold leading-[1.4] text-slate-900 transition-colors group-hover:text-red-600">
+                  {article.title}
+                </h3>
 
-                  <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-700">
-                    {article.category}
-                  </span>
-
-                  <h3 className="mt-5 text-3xl font-black leading-tight transition group-hover:text-red-700">
-                    {article.title}
-                  </h3>
-
-                  <p className="mt-5 line-clamp-3 text-gray-600">
-                    {article.summary}
-                  </p>
-
-                </div>
-
-                <div className="mt-8 flex items-center justify-between">
-
-                  <span className="text-sm text-gray-500">
-                    {new Date(article.createdAt).toLocaleDateString("fr-FR")}
-                  </span>
-
-                  <span className="font-bold text-red-700">
-                    Lire l'article →
-                  </span>
-
-                </div>
-
+                <p className="mt-2.5 text-[10px] font-medium text-slate-400">
+                  {new Date(article.createdAt).toLocaleDateString("fr-FR")}
+                </p>
               </div>
-
-            </div>
-
-          </Link>
-        ))}
-
-      </div>
-
+            </Link>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

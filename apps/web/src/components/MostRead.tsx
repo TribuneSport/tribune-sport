@@ -1,5 +1,8 @@
+﻿import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 
 export default async function MostRead() {
   const articles = await db.article.findMany({
@@ -13,101 +16,70 @@ export default async function MostRead() {
   });
 
   return (
-    <aside className="space-y-8">
+    <aside className="h-full">
+      <section className="h-full overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+        <div className="border-b border-slate-100 px-5 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🔥</span>
 
-      <section className="rounded-3xl border bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-black tracking-tight text-slate-950">
+                Les plus lus
+              </h2>
+            </div>
 
-        <h2 className="mb-6 text-2xl font-black">
-          🔥 Les plus lus
-        </h2>
-
-        <div className="space-y-5">
-
-          {articles.map((article, index) => (
-            <Link
-              key={article.id}
-              href={`/article/${article.slug}`}
-              className="group flex items-start gap-4"
-            >
-
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-700 font-black text-white">
-                {index + 1}
-              </div>
-
-              <div>
-
-                <p className="text-xs font-bold uppercase tracking-wide text-red-700">
-                  {article.category}
-                </p>
-
-                <h3 className="mt-1 font-semibold leading-6 transition group-hover:text-red-700">
-                  {article.title}
-                </h3>
-
-              </div>
-
-            </Link>
-          ))}
-
+            <span className="text-sm font-bold text-red-600">↗</span>
+          </div>
         </div>
 
+        {articles.length === 0 ? (
+          <div className="px-5 py-8">
+            <p className="text-sm leading-6 text-slate-500">
+              Les premières actualités apparaîtront ici.
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {articles.map((article, index) => (
+              <Link
+                key={article.id}
+                href={`/article/${article.slug}`}
+                className="group flex gap-3 px-5 py-4 transition-colors hover:bg-slate-50"
+              >
+                <div
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+                    index === 0
+                      ? "bg-red-600 text-white"
+                      : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {index + 1}
+                </div>
+
+                <div className="relative h-[62px] w-[82px] shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                  <Image
+                    src={article.image || "/football.jpg"}
+                    alt={article.title}
+                    fill
+                    sizes="82px"
+                    className="object-cover transition duration-300 group-hover:scale-105"
+                  />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <h3 className="line-clamp-3 text-sm font-bold leading-[1.35] text-slate-900 transition-colors group-hover:text-red-600">
+                    {article.title}
+                  </h3>
+
+                  <p className="mt-1.5 text-[10px] font-medium text-slate-400">
+                    {new Date(article.createdAt).toLocaleDateString("fr-FR")}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
-
-      <section className="rounded-3xl border bg-white p-6 shadow-sm">
-
-        <h2 className="mb-5 text-2xl font-black">
-          📈 Tendances
-        </h2>
-
-        <div className="flex flex-wrap gap-3">
-
-          {[
-            "Mercato",
-            "Ligue 1",
-            "Premier League",
-            "Liga",
-            "Serie A",
-            "Bundesliga",
-            "PSG",
-            "OM",
-            "Real Madrid",
-            "FC Barcelone",
-          ].map((tag) => (
-            <Link
-              key={tag}
-              href={`/recherche?q=${encodeURIComponent(tag)}`}
-              className="rounded-full bg-gray-100 px-4 py-2 text-sm font-semibold transition hover:bg-red-700 hover:text-white"
-            >
-              #{tag}
-            </Link>
-          ))}
-
-        </div>
-
-      </section>
-
-      <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-red-700 via-red-600 to-red-500 p-8 text-white shadow-xl">
-
-        <h2 className="text-3xl font-black">
-          Tribune Foot
-        </h2>
-
-        <p className="mt-5 leading-8 text-red-100">
-          Le média 100 % football.
-          Retrouvez toute l'actualité des grands championnats,
-          des compétitions européennes, du mercato et des sélections
-          nationales.
-        </p>
-
-        <Link
-          href="/articles"
-          className="mt-8 inline-flex rounded-xl bg-white px-6 py-3 font-bold text-red-700 transition hover:bg-gray-100"
-        >
-          Voir toutes les actualités
-        </Link>
-
-      </section>
-
     </aside>
   );
 }
