@@ -1,5 +1,6 @@
 import Parser from "rss-parser";
 import { db } from "@/lib/db";
+import { detectCategory } from "@/lib/classifier";
 
 export class RSSAgent {
   private parser = new Parser();
@@ -32,19 +33,28 @@ export class RSSAgent {
             continue;
           }
 
+          const summary =
+            item.contentSnippet ??
+            item.content ??
+            "";
+
+          const content =
+            item.content ??
+            item.contentSnippet ??
+            "";
+
+          const category = detectCategory(
+            item.title,
+            summary
+          );
+
           await db.article.create({
             data: {
               title: item.title,
-              summary:
-                item.contentSnippet ??
-                item.content ??
-                "",
-              content:
-                item.content ??
-                item.contentSnippet ??
-                "",
+              summary,
+              content,
               image: "",
-              category: "Football",
+              category,
               sourceUrl: item.link,
               published: false,
             },
