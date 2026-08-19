@@ -28,10 +28,10 @@ export async function POST(request: NextRequest) {
         id: {
           in: ids,
         },
-        published: true,
+        published: false,
       },
       data: {
-        published: false,
+        published: true,
       },
     });
 
@@ -41,14 +41,14 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error(
-      "POST /api/articles/unpublish-bulk :",
+      "POST /api/articles/publish-bulk :",
       error
     );
 
     return NextResponse.json(
       {
         success: false,
-        error: "Erreur lors de la dépublication des articles.",
+        error: "Erreur lors de la publication des articles.",
       },
       {
         status: 500,
