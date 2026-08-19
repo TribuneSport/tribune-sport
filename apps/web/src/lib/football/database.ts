@@ -159,12 +159,66 @@ export class FootballDatabase {
     logo?: string;
     season?: string;
   }) {
-    return db.competition.upsert({
+    /*
+     * Vérification par slug.
+     *
+     * Le slug est unique dans la base.
+     */
+    const existingBySlug = await db.competition.findUnique({
       where: {
         slug: data.slug,
       },
-      update: data,
-      create: data,
+    });
+
+    if (existingBySlug) {
+      return db.competition.update({
+        where: {
+          id: existingBySlug.id,
+        },
+        data: {
+          name: data.name,
+          country: data.country,
+          logo: data.logo,
+          season: data.season,
+        },
+      });
+    }
+
+    /*
+     * Vérification par nom.
+     *
+     * Le nom est également unique dans la base.
+     *
+     * Cela évite l'erreur :
+     *
+     * Unique constraint failed on the fields: (`name`)
+     */
+    const existingByName = await db.competition.findUnique({
+      where: {
+        name: data.name,
+      },
+    });
+
+    if (existingByName) {
+      return db.competition.update({
+        where: {
+          id: existingByName.id,
+        },
+        data: {
+          slug: data.slug,
+          country: data.country,
+          logo: data.logo,
+          season: data.season,
+        },
+      });
+    }
+
+    /*
+     * Aucune compétition existante :
+     * création normale.
+     */
+    return db.competition.create({
+      data,
     });
   }
 
