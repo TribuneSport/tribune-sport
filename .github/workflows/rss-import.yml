@@ -1,0 +1,16 @@
+name: Import automatique des articles
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  import-articles:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Déclencher le pipeline Tribune Foot
+        run: |
+          curl --fail --show-error --silent \
+            "https://tribunesport.fr/api/agents/run"
