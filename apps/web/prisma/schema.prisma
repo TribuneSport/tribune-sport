@@ -46,6 +46,8 @@ model Article {
 model Club {
   id Int @id @default(autoincrement())
 
+  externalId Int? @unique
+
   name String @unique
   slug String @unique
 
@@ -238,7 +240,7 @@ model Session {
 
   expires DateTime
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
 }
 
 model VerificationToken {
