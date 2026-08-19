@@ -52,6 +52,10 @@ export const metadata: Metadata = {
     },
   },
 
+  verification: {
+    google: "QkhHtTzzldlra_jyqVF7qc1aJ4M1YmIrqjdMLbbo3to",
+  },
+
   openGraph: {
     type: "website",
     locale: "fr_FR",

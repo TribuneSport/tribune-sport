@@ -5,17 +5,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const ids = Array.isArray(body.ids)
-      ? body.ids
-          .map(Number)
-          .filter((id: number) => Number.isInteger(id))
-      : [];
+    const id = Number(body.id);
 
-    if (ids.length === 0) {
+    if (!Number.isInteger(id)) {
       return NextResponse.json(
         {
           success: false,
-          error: "Aucun article sélectionné.",
+          error: "ID article invalide.",
         },
         {
           status: 400,
@@ -23,12 +19,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await db.article.updateMany({
+    const article = await db.article.findUnique({
       where: {
-        id: {
-          in: ids,
+        id,
+      },
+    });
+
+    if (!article) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Article introuvable.",
         },
-        published: true,
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const updatedArticle = await db.article.update({
+      where: {
+        id,
       },
       data: {
         published: false,
@@ -37,18 +48,18 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      count: result.count,
+      article: updatedArticle,
     });
   } catch (error) {
     console.error(
-      "POST /api/articles/unpublish-bulk :",
+      "POST /api/articles/unpublish :",
       error
     );
 
     return NextResponse.json(
       {
         success: false,
-        error: "Erreur lors de la dépublication des articles.",
+        error: "Erreur lors de la dépublication de l'article.",
       },
       {
         status: 500,

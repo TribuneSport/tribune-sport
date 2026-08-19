@@ -16,7 +16,7 @@ export default async function FeaturedArticle() {
 
   if (!article) {
     return (
-      <section className="flex min-h-[360px] items-center justify-center overflow-hidden rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+      <section className="flex min-h-[320px] items-center justify-center overflow-hidden rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
         <div className="max-w-md text-center">
           <p className="text-sm font-black uppercase tracking-[0.18em] text-red-600">
             Tribune Foot
@@ -37,7 +37,7 @@ export default async function FeaturedArticle() {
   return (
     <Link
       href={`/article/${article.slug}`}
-      className="group relative block min-h-[360px] overflow-hidden rounded-2xl bg-slate-950 shadow-lg ring-1 ring-black/5 sm:min-h-[420px] lg:min-h-[470px]"
+      className="group relative block min-h-[320px] overflow-hidden rounded-2xl bg-slate-950 shadow-lg ring-1 ring-black/5 sm:min-h-[340px] lg:min-h-[360px]"
     >
       <Image
         src={article.image || "/football.jpg"}
@@ -50,7 +50,7 @@ export default async function FeaturedArticle() {
 
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/5" />
 
-      <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-7 lg:p-8">
+      <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-6 lg:p-7">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-red-600 px-3 py-1 text-[11px] font-black uppercase tracking-wide">
             {article.category}
@@ -71,7 +71,7 @@ export default async function FeaturedArticle() {
           </p>
         )}
 
-        <div className="mt-5 inline-flex items-center text-xs font-black uppercase tracking-[0.12em] text-white transition group-hover:text-red-400">
+        <div className="mt-4 inline-flex items-center text-xs font-black uppercase tracking-[0.12em] text-white transition group-hover:text-red-400">
           Lire l'article
           <span className="ml-2 text-base transition-transform duration-300 group-hover:translate-x-1">
             →

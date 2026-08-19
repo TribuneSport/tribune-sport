@@ -22,16 +22,12 @@ export default function ArticlesTable({ articles }: Props) {
   const router = useRouter();
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [publishingId, setPublishingId] = useState<number | null>(null);
-  const [publishingBulk, setPublishingBulk] = useState(false);
+  const [processingId, setProcessingId] = useState<number | null>(null);
+  const [processingBulk, setProcessingBulk] = useState(false);
 
-  const draftArticles = articles.filter(
-    (article) => !article.published
-  );
-
-  const allDraftsSelected =
-    draftArticles.length > 0 &&
-    draftArticles.every((article) =>
+  const allSelected =
+    articles.length > 0 &&
+    articles.every((article) =>
       selectedIds.includes(article.id)
     );
 
@@ -43,27 +39,25 @@ export default function ArticlesTable({ articles }: Props) {
     );
   }
 
-  function toggleAllDrafts() {
-    if (allDraftsSelected) {
+  function toggleAll() {
+    if (allSelected) {
       setSelectedIds([]);
       return;
     }
 
-    setSelectedIds(draftArticles.map((article) => article.id));
+    setSelectedIds(articles.map((article) => article.id));
   }
 
   async function publishArticle(id: number) {
     try {
-      setPublishingId(id);
+      setProcessingId(id);
 
       const response = await fetch("/api/articles/publish", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          id,
-        }),
+        body: JSON.stringify({ id }),
       });
 
       const data = await response.json();
@@ -83,7 +77,51 @@ export default function ArticlesTable({ articles }: Props) {
       console.error(error);
       alert("Impossible de publier cet article.");
     } finally {
-      setPublishingId(null);
+      setProcessingId(null);
+    }
+  }
+
+  async function unpublishArticle(id: number) {
+    const confirmed = window.confirm(
+      "Voulez-vous dépublier cet article ?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setProcessingId(id);
+
+      const response = await fetch(
+        "/api/articles/unpublish",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.error || "Erreur lors de la dépublication."
+        );
+      }
+
+      setSelectedIds((current) =>
+        current.filter((selectedId) => selectedId !== id)
+      );
+
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      alert("Impossible de dépublier cet article.");
+    } finally {
+      setProcessingId(null);
     }
   }
 
@@ -103,7 +141,7 @@ export default function ArticlesTable({ articles }: Props) {
     }
 
     try {
-      setPublishingBulk(true);
+      setProcessingBulk(true);
 
       const response = await fetch(
         "/api/articles/publish-bulk",
@@ -140,7 +178,64 @@ export default function ArticlesTable({ articles }: Props) {
         "Impossible de publier les articles sélectionnés."
       );
     } finally {
-      setPublishingBulk(false);
+      setProcessingBulk(false);
+    }
+  }
+
+  async function unpublishSelected() {
+    if (selectedIds.length === 0) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Voulez-vous dépublier ${selectedIds.length} article${
+        selectedIds.length > 1 ? "s" : ""
+      } ?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setProcessingBulk(true);
+
+      const response = await fetch(
+        "/api/articles/unpublish-bulk",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ids: selectedIds,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.error || "Erreur lors de la dépublication."
+        );
+      }
+
+      alert(
+        `${data.count} article${
+          data.count > 1 ? "s" : ""
+        } dépublié${data.count > 1 ? "s" : ""}.`
+      );
+
+      setSelectedIds([]);
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      alert(
+        "Impossible de dépublier les articles sélectionnés."
+      );
+    } finally {
+      setProcessingBulk(false);
     }
   }
 
@@ -169,18 +264,29 @@ export default function ArticlesTable({ articles }: Props) {
               <button
                 type="button"
                 onClick={publishSelected}
-                disabled={publishingBulk}
+                disabled={processingBulk}
                 className="rounded-xl bg-green-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {publishingBulk
-                  ? "Publication..."
+                {processingBulk
+                  ? "Traitement..."
                   : "✓ Publier la sélection"}
               </button>
 
               <button
                 type="button"
+                onClick={unpublishSelected}
+                disabled={processingBulk}
+                className="rounded-xl bg-orange-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {processingBulk
+                  ? "Traitement..."
+                  : "↩ Dépublier la sélection"}
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setSelectedIds([])}
-                disabled={publishingBulk}
+                disabled={processingBulk}
                 className="rounded-xl bg-slate-200 px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-300"
               >
                 Annuler
@@ -195,24 +301,22 @@ export default function ArticlesTable({ articles }: Props) {
           <label className="flex cursor-pointer items-center gap-3 text-sm font-bold text-slate-700">
             <input
               type="checkbox"
-              checked={allDraftsSelected}
-              onChange={toggleAllDrafts}
+              checked={allSelected}
+              onChange={toggleAll}
               className="h-5 w-5 rounded border-slate-300"
             />
 
-            Sélectionner tous les brouillons
+            Sélectionner tous les articles
 
-            {draftArticles.length > 0 && (
-              <span className="font-normal text-slate-500">
-                ({draftArticles.length})
-              </span>
-            )}
+            <span className="font-normal text-slate-500">
+              ({articles.length})
+            </span>
           </label>
         </div>
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[950px]">
+        <table className="w-full min-w-[1100px]">
           <thead className="bg-slate-100">
             <tr>
               <th className="w-14 p-4 text-center">
@@ -248,24 +352,16 @@ export default function ArticlesTable({ articles }: Props) {
                 className="border-t transition hover:bg-slate-50"
               >
                 <td className="p-4 text-center">
-                  {article.published ? (
-                    <span
-                      className="text-slate-300"
-                      title="Article déjà publié"
-                    >
-                      —
-                    </span>
-                  ) : (
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(article.id)}
-                      onChange={() =>
-                        toggleArticle(article.id)
-                      }
-                      className="h-5 w-5 rounded border-slate-300"
-                      aria-label={`Sélectionner ${article.title}`}
-                    />
-                  )}
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(article.id)}
+                    onChange={() =>
+                      toggleArticle(article.id)
+                    }
+                    disabled={processingBulk}
+                    className="h-5 w-5 rounded border-slate-300"
+                    aria-label={`Sélectionner ${article.title}`}
+                  />
                 </td>
 
                 <td className="max-w-md p-4 font-semibold">
@@ -299,7 +395,7 @@ export default function ArticlesTable({ articles }: Props) {
                 </td>
 
                 <td className="p-4">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex flex-wrap justify-end gap-2">
                     {article.published && article.slug && (
                       <Link
                         href={`/article/${article.slug}`}
@@ -310,18 +406,33 @@ export default function ArticlesTable({ articles }: Props) {
                       </Link>
                     )}
 
-                    {!article.published && (
+                    {article.published ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          unpublishArticle(article.id)
+                        }
+                        disabled={
+                          processingId === article.id
+                        }
+                        className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {processingId === article.id
+                          ? "..."
+                          : "Dépublier"}
+                      </button>
+                    ) : (
                       <button
                         type="button"
                         onClick={() =>
                           publishArticle(article.id)
                         }
                         disabled={
-                          publishingId === article.id
+                          processingId === article.id
                         }
                         className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {publishingId === article.id
+                        {processingId === article.id
                           ? "..."
                           : "Publier"}
                       </button>
@@ -334,7 +445,9 @@ export default function ArticlesTable({ articles }: Props) {
                       Modifier
                     </Link>
 
-                    <DeleteArticleButton id={article.id} />
+                    <DeleteArticleButton
+                      id={article.id}
+                    />
                   </div>
                 </td>
               </tr>
