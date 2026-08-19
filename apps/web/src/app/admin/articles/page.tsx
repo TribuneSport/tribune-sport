@@ -12,16 +12,25 @@ export default async function ArticlesPage() {
   });
 
   const total = articles.length;
-  const published = articles.filter((a) => a.published).length;
+
+  const published = articles.filter(
+    (article: (typeof articles)[number]) => article.published
+  ).length;
+
   const drafts = total - published;
+
   const categories = new Set(
-    articles.map((a) => a.category)
+    articles.map(
+      (article: (typeof articles)[number]) => article.category
+    )
   ).size;
 
   return (
     <main className="min-h-screen bg-slate-100">
       <div className="mx-auto max-w-7xl px-6 py-10">
+
         <div className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+
           <div>
             <h1 className="text-5xl font-black">
               Gestion des articles
@@ -33,6 +42,7 @@ export default async function ArticlesPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
+
             <Link
               href="/admin"
               className="rounded-xl bg-slate-700 px-6 py-3 font-bold text-white transition hover:bg-slate-800"
@@ -46,10 +56,12 @@ export default async function ArticlesPage() {
             >
               ➕ Nouvel article
             </Link>
+
           </div>
         </div>
 
         <div className="mb-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+
           <div className="rounded-3xl bg-white p-6 shadow">
             <p className="text-gray-500">
               Articles
@@ -89,18 +101,22 @@ export default async function ArticlesPage() {
               {categories}
             </h2>
           </div>
+
         </div>
 
         <ArticlesTable
-          articles={articles.map((article) => ({
-            id: article.id,
-            title: article.title,
-            category: article.category,
-            published: article.published,
-            createdAt: article.createdAt,
-            slug: article.slug,
-          }))}
+          articles={articles.map(
+            (article: (typeof articles)[number]) => ({
+              id: article.id,
+              title: article.title,
+              category: article.category,
+              published: article.published,
+              createdAt: article.createdAt,
+              slug: article.slug,
+            })
+          )}
         />
+
       </div>
     </main>
   );

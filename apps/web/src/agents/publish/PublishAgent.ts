@@ -5,6 +5,7 @@ export class PublishAgent {
     const articles = await db.article.findMany({
       where: {
         published: false,
+        aiRewritten: true,
       },
     });
 
@@ -14,18 +15,21 @@ export class PublishAgent {
       if (
         article.slug &&
         article.seoTitle &&
-        article.seoDescription
+        article.seoDescription &&
+        article.aiRewritten
       ) {
-        await db.article.update({
-          where: {
-            id: article.id,
-          },
-          data: {
-            published: true,
-          },
-        });
-
-        total++;
+        /*
+         * ATTENTION :
+         *
+         * Même après traitement IA,
+         * l'article reste volontairement en brouillon.
+         *
+         * Cet agent ne publie donc plus automatiquement.
+         *
+         * La publication doit être faite depuis l'administration
+         * après validation humaine.
+         */
+        continue;
       }
     }
 

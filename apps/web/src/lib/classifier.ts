@@ -24,6 +24,12 @@ const categories: Category[] = [
       "recrute",
       "prolonge",
       "extension",
+      "transfert",
+      "pret",
+      "prêt",
+      "contrat",
+      "prolongation",
+      "recrutement",
     ],
   },
 
@@ -39,61 +45,212 @@ const categories: Category[] = [
   },
 
   {
+    name: "International",
+    keywords: [
+      "world cup",
+      "coupe du monde",
+      "fifa",
+      "international",
+      "euro",
+      "euro 2024",
+      "euro 2028",
+      "euro 2032",
+      "nations league",
+      "nation league",
+      "copa america",
+      "afcon",
+      "coupe d'afrique",
+      "coupe d'afrique des nations",
+      "can 202",
+    ],
+  },
+
+  {
+    name: "Europe",
+    keywords: [
+      /*
+       * Angleterre
+       */
+      "premier league",
+      "premiership",
+      "championship",
+      "efl championship",
+      "league one",
+      "league two",
+      "fa cup",
+      "carabao cup",
+      "arsenal",
+      "chelsea",
+      "liverpool",
+      "manchester city",
+      "manchester united",
+      "tottenham",
+      "newcastle",
+      "aston villa",
+      "west ham",
+      "everton",
+      "brighton",
+      "crystal palace",
+      "fulham",
+      "wolves",
+      "wolverhampton",
+      "nottingham forest",
+      "leicester",
+      "southampton",
+      "leeds united",
+
+      /*
+       * Espagne
+       */
+      "la liga",
+      "laliga",
+      "real madrid",
+      "real de madrid",
+      "barcelona",
+      "fc barcelona",
+      "atletico madrid",
+      "athletic bilbao",
+      "sevilla",
+      "valencia",
+      "villarreal",
+
+      /*
+       * Italie
+       */
+      "serie a",
+      "juventus",
+      "inter milan",
+      "internazionale",
+      "ac milan",
+      "milan",
+      "napoli",
+      "roma",
+      "as roma",
+      "lazio",
+      "atalanta",
+
+      /*
+       * Allemagne
+       */
+      "bundesliga",
+      "bayern",
+      "bayern munich",
+      "borussia dortmund",
+      "dortmund",
+      "bayer leverkusen",
+      "leverkusen",
+      "rb leipzig",
+
+      /*
+       * Pays-Bas
+       */
+      "eredivisie",
+      "ajax",
+      "psv",
+      "feyenoord",
+
+      /*
+       * Portugal
+       */
+      "liga portugal",
+      "primeira liga",
+      "benfica",
+      "porto",
+      "sporting lisbon",
+
+      /*
+       * Belgique
+       */
+      "jupiler pro league",
+      "anderlecht",
+      "club brugge",
+
+      /*
+       * Écosse
+       */
+      "scottish premiership",
+      "celtic",
+      "rangers",
+
+      /*
+       * Turquie
+       */
+      "super lig",
+      "galatasaray",
+      "fenerbahce",
+      "besiktas",
+
+      /*
+       * Compétitions européennes
+       */
+      "europa league",
+      "uefa europa league",
+      "conference league",
+      "uefa conference league",
+      "uefa",
+    ],
+  },
+
+  {
     name: "France",
     keywords: [
       "ligue 1",
       "ligue1",
-      "l1",
+      "ligue 2",
+      "ligue2",
 
-      "psg",
       "paris saint-germain",
       "paris saint germain",
+      "psg",
 
-      "marseille",
       "olympique de marseille",
-      "om",
+      "marseille",
 
-      "lyon",
       "olympique lyonnais",
+      "lyon",
 
-      "monaco",
       "as monaco",
+      "monaco",
 
-      "lille",
       "losc",
+      "lille",
 
-      "lens",
       "rc lens",
+      "lens",
 
-      "rennes",
       "stade rennais",
+      "rennes",
 
-      "nice",
       "ogc nice",
+      "nice",
 
-      "nantes",
       "fc nantes",
+      "nantes",
 
       "montpellier",
-      "strasbourg",
+
       "rc strasbourg",
+      "strasbourg",
 
-      "metz",
       "fc metz",
+      "metz",
 
-      "brest",
       "stade brestois",
+      "brest",
 
-      "reims",
       "stade de reims",
+      "reims",
 
-      "auxerre",
       "aj auxerre",
+      "auxerre",
 
+      "toulouse fc",
       "toulouse",
-      "tfc",
 
+      "angers sco",
       "angers",
+
+      "fc lorient",
       "lorient",
 
       "saint-etienne",
@@ -106,100 +263,68 @@ const categories: Category[] = [
   },
 
   {
-    name: "Europe",
-    keywords: [
-      "premier league",
-
-      "arsenal",
-      "chelsea",
-      "liverpool",
-      "manchester city",
-      "manchester united",
-      "tottenham",
-      "newcastle",
-      "aston villa",
-
-      "real madrid",
-      "real de madrid",
-      "barcelona",
-      "fc barcelona",
-      "atletico madrid",
-
-      "juventus",
-      "inter milan",
-      "inter",
-      "ac milan",
-      "napoli",
-      "roma",
-      "lazio",
-
-      "bayern",
-      "bayern munich",
-      "bayern munich",
-      "dortmund",
-      "borussia dortmund",
-      "leverkusen",
-      "bayer leverkusen",
-
-      "bundesliga",
-      "serie a",
-      "la liga",
-      "liga",
-      "eredivisie",
-    ],
-  },
-
-  {
-    name: "International",
-    keywords: [
-      "world cup",
-      "coupe du monde",
-      "fifa",
-      "international",
-      "euro",
-      "euro 202",
-      "nation league",
-      "nations league",
-      "copa america",
-      "afcon",
-      "can",
-      "coupe d'afrique",
-      "coupe d'afrique des nations",
-    ],
-  },
-
-  {
     name: "Classements",
     keywords: [
       "standings",
       "ranking",
+      "league table",
       "table",
       "classement",
       "leader",
+      "classements",
     ],
   },
 ];
+
+function normalize(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’']/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function containsKeyword(text: string, keyword: string): boolean {
+  const normalizedKeyword = normalize(keyword);
+
+  /*
+   * Pour les termes très courts, on exige des limites de mots.
+   */
+  if (normalizedKeyword.length <= 3) {
+    const regex = new RegExp(
+      `(^|\\s)${normalizedKeyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|\\s)`,
+      "i"
+    );
+
+    return regex.test(text);
+  }
+
+  return text.includes(normalizedKeyword);
+}
 
 export function detectCategory(
   title: string,
   summary: string
 ): string {
-  const text = `${title} ${summary}`
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+  const text = normalize(`${title} ${summary}`);
 
+  /*
+   * Priorité :
+   * 1. Mercato
+   * 2. Ligue des Champions
+   * 3. International
+   * 4. Europe
+   * 5. France
+   * 6. Classements
+   */
   for (const category of categories) {
-    if (
-      category.keywords.some((keyword) =>
-        text.includes(
-          keyword
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-        )
-      )
-    ) {
+    const found = category.keywords.some((keyword) =>
+      containsKeyword(text, keyword)
+    );
+
+    if (found) {
       return category.name;
     }
   }

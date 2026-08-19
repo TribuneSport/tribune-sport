@@ -1,16 +1,14 @@
-import { db } from "@/lib/db";
-import { BaseAgent } from "../base/BaseAgent";
-import { createSlug } from "@/lib/slug";
+﻿import { db } from "@/lib/db";
+import { AIService } from "@/services/ai.service";
 
-export class NewsAgent extends BaseAgent {
-  constructor() {
-    super("NewsAgent");
-  }
+export class NewsAgent {
+  private ai = new AIService();
 
   async execute(): Promise<number> {
     const articles = await db.article.findMany({
       where: {
         published: false,
+        aiRewritten: false,
       },
       orderBy: {
         createdAt: "asc",
@@ -20,48 +18,63 @@ export class NewsAgent extends BaseAgent {
     let processed = 0;
 
     for (const article of articles) {
-      const title = this.cleanTitle(article.title);
+      try {
+        if (!article.content?.trim()) {
+          console.log(
+            `Article ignoré : contenu vide - ${article.title}`
+          );
+          continue;
+        }
 
-      await db.article.update({
-        where: {
-          id: article.id,
-        },
-        data: {
-          title,
-          slug: article.slug ?? createSlug(title),
-          seoTitle:
-            article.seoTitle ??
-            `${title} | Tribune Foot`,
-          seoDescription:
-            article.seoDescription ??
-            this.createSeoDescription(article.summary),
-        },
-      });
+        console.log(
+          `🤖 Réécriture IA : ${article.title}`
+        );
 
-      processed++;
+        const rewritten =
+          await this.ai.rewriteArticle({
+            title: article.title,
+            summary: article.summary,
+            content: article.content,
+            category: article.category,
+          });
+
+        await db.article.update({
+          where: {
+            id: article.id,
+          },
+          data: {
+            title: rewritten.title,
+            summary: rewritten.summary,
+            content: rewritten.content,
+
+            seoTitle: rewritten.seoTitle,
+
+            seoDescription:
+              rewritten.seoDescription,
+
+            aiRewritten: true,
+
+            /*
+             * Très important :
+             * l'article reste en brouillon.
+             */
+            published: false,
+          },
+        });
+
+        processed++;
+
+        console.log(
+          `✅ Article réécrit : ${rewritten.title}`
+        );
+      } catch (error) {
+        console.error(
+          `❌ Erreur réécriture article ${article.id}:`,
+          error
+        );
+      }
     }
-
-    this.success(`${processed} article(s) préparé(s).`);
 
     return processed;
-  }
-
-  private cleanTitle(title: string): string {
-    return title
-      .replace(/\|.*/g, "")
-      .replace(/- RMC Sport/gi, "")
-      .replace(/- L'Équipe/gi, "")
-      .replace(/- Foot Mercato/gi, "")
-      .trim();
-  }
-
-  private createSeoDescription(summary: string): string {
-    if (!summary) {
-      return "";
-    }
-
-    return summary.length > 155
-      ? summary.substring(0, 155) + "..."
-      : summary;
   }
 }

@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { RSSService } from "./rss.service";
-import { normalizeCategory } from "@/lib/categories";
+import { detectCategory } from "@/lib/classifier";
 import { createSlug } from "@/lib/slug";
 import { franc } from "franc";
 
@@ -30,11 +30,12 @@ export class RSSImportService {
 
       const summary =
         article.description?.trim() ||
+        article.content?.trim() ||
         "Aucun résumé disponible.";
 
       /*
        * ---------------------------------------------------------
-       * 1. FILTRE DE LANGUE
+       * 1. FILTRE LANGUE
        * ---------------------------------------------------------
        */
 
@@ -56,22 +57,18 @@ export class RSSImportService {
 
       /*
        * ---------------------------------------------------------
-       * 2. ANTI-DOUBLON + RÉCUPÉRATION DES IMAGES MANQUANTES
+       * 2. ANTI-DOUBLON
        * ---------------------------------------------------------
        */
 
-      const existing = await db.article.findUnique({
-        where: {
-          sourceUrl: article.link,
-        },
-      });
+      const existing =
+        await db.article.findUnique({
+          where: {
+            sourceUrl: article.link,
+          },
+        });
 
       if (existing) {
-        /*
-         * Si l'article existe déjà mais n'a aucune image,
-         * on utilise automatiquement l'image récupérée
-         * depuis le RSS ou og:image.
-         */
         if (!existing.image && article.image) {
           await db.article.update({
             where: {
@@ -85,7 +82,7 @@ export class RSSImportService {
           updatedImages++;
 
           console.log(
-            `🖼️ Image ajoutée à l'article existant : ${title}`
+            `🖼️ Image ajoutée : ${title}`
           );
         } else {
           duplicates++;
@@ -100,7 +97,18 @@ export class RSSImportService {
 
       /*
        * ---------------------------------------------------------
-       * 3. SLUG
+       * 3. CATÉGORIE
+       * ---------------------------------------------------------
+       */
+
+      const category = detectCategory(
+        title,
+        summary
+      );
+
+      /*
+       * ---------------------------------------------------------
+       * 4. SLUG
        * ---------------------------------------------------------
        */
 
@@ -124,20 +132,20 @@ export class RSSImportService {
 
       /*
        * ---------------------------------------------------------
-       * 4. CATÉGORIE
+       * 5. IMAGE
        * ---------------------------------------------------------
        */
 
-      const category = normalizeCategory(
-        article.club
-      );
+      const image =
+        article.image?.trim() || "";
 
       /*
        * ---------------------------------------------------------
-       * 5. CRÉATION DU BROUILLON
+       * 6. BROUILLON
        * ---------------------------------------------------------
        *
-       * Aucun article RSS n'est publié automatiquement.
+       * L'article RSS entre comme matière première.
+       * L'agent IA le réécrira ensuite.
        */
 
       await db.article.create({
@@ -146,24 +154,23 @@ export class RSSImportService {
 
           summary,
 
-          content: summary,
+          content:
+            article.content?.trim() ||
+            summary,
 
           category,
 
-          /*
-           * L'image est maintenant récupérée automatiquement
-           * depuis le RSS ou depuis og:image.
-           */
-          image: article.image || "",
+          image,
 
           sourceUrl: article.link,
 
           published: false,
 
-          seoTitle: title,
+          aiRewritten: false,
 
-          seoDescription:
-            summary.substring(0, 160),
+          seoTitle: null,
+
+          seoDescription: null,
 
           slug,
         },
@@ -172,7 +179,7 @@ export class RSSImportService {
       imported++;
 
       console.log(
-        `✅ Brouillon créé : ${title}`
+        `✅ Brouillon créé [${category}] : ${title}`
       );
     }
 
@@ -180,11 +187,21 @@ export class RSSImportService {
     console.log("================================");
     console.log("📊 RÉSULTAT IMPORT RSS");
     console.log("================================");
-    console.log(`✅ Nouveaux brouillons : ${imported}`);
-    console.log(`↩️ Doublons : ${duplicates}`);
-    console.log(`🖼️ Images mises à jour : ${updatedImages}`);
-    console.log(`🌍 Non français : ${nonFrench}`);
-    console.log(`⚠️ Invalides : ${invalid}`);
+    console.log(
+      `✅ Nouveaux brouillons : ${imported}`
+    );
+    console.log(
+      `↩️ Doublons : ${duplicates}`
+    );
+    console.log(
+      `🖼️ Images mises à jour : ${updatedImages}`
+    );
+    console.log(
+      `🌍 Non français : ${nonFrench}`
+    );
+    console.log(
+      `⚠️ Invalides : ${invalid}`
+    );
     console.log("================================");
     console.log("");
 

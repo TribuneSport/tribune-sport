@@ -21,6 +21,17 @@ model Article {
 
   published Boolean @default(false)
 
+  /*
+   * Article entièrement réécrit par l'IA
+   * avant validation manuelle.
+   */
+  aiRewritten Boolean @default(false)
+
+  /*
+   * Nombre total de consultations de l'article.
+   */
+  views Int @default(0)
+
   seoTitle       String?
   seoDescription String?
   slug           String? @unique
@@ -33,6 +44,8 @@ model Article {
   player      Player?      @relation(fields: [playerId], references: [id])
   competition Competition? @relation(fields: [competitionId], references: [id])
 
+  visits Visit[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -41,6 +54,7 @@ model Article {
   @@index([clubId])
   @@index([playerId])
   @@index([competitionId])
+  @@index([views])
 }
 
 model Club {
@@ -251,4 +265,40 @@ model VerificationToken {
   expires DateTime
 
   @@unique([identifier, token])
+}
+
+/*
+ * ============================================================
+ * VISITES
+ * ============================================================
+ *
+ * Une ligne = une consultation.
+ *
+ * articleId :
+ * - permet de connaître les articles les plus vus
+ *
+ * path :
+ * - permet aussi d'enregistrer les visites générales du site
+ *
+ * createdAt :
+ * - permet de calculer :
+ *   - aujourd'hui
+ *   - cette semaine
+ *   - ce mois
+ *   - total
+ */
+
+model Visit {
+  id Int @id @default(autoincrement())
+
+  articleId Int?
+
+  article Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  path String?
+
+  createdAt DateTime @default(now())
+
+  @@index([articleId])
+  @@index([createdAt])
 }

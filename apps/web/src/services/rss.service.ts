@@ -33,6 +33,17 @@ type RSSFeed = {
   url: string;
 };
 
+export type RSSArticle = {
+  club: string;
+  sourceName: string;
+  title: string;
+  description: string;
+  content: string;
+  link: string;
+  pubDate: string;
+  image: string;
+};
+
 const parser = new Parser<{}, RSSItem>({
   customFields: {
     item: [
@@ -43,26 +54,23 @@ const parser = new Parser<{}, RSSItem>({
 });
 
 export class RSSService {
-  async getSources() {
+  async getSources(): Promise<RSSArticle[]> {
     const feeds: RSSFeed[] = [
       {
         name: "Le Figaro Football",
         club: "Football",
         url: "https://www.lefigaro.fr/rss/figaro_football.xml",
       },
-
       {
         name: "UEFA",
         club: "UEFA",
         url: "https://www.uefa.com/rssfeed/news/rss.xml",
       },
-
       {
         name: "BBC Sport Football",
         club: "Football",
         url: "https://feeds.bbci.co.uk/sport/football/rss.xml",
       },
-
       {
         name: "The Guardian Football",
         club: "Football",
@@ -70,15 +78,7 @@ export class RSSService {
       },
     ];
 
-    const articles: Array<{
-      club: string;
-      sourceName: string;
-      title: string;
-      description: string;
-      link: string;
-      pubDate: string;
-      image: string;
-    }> = [];
+    const articles: RSSArticle[] = [];
 
     for (const feed of feeds) {
       try {
@@ -103,17 +103,13 @@ export class RSSService {
             item.content?.trim() ||
             "";
 
-          /*
-           * 1. On cherche d'abord l'image directement
-           *    fournie par le flux RSS.
-           */
+          const content =
+            item.content?.trim() ||
+            item.contentSnippet?.trim() ||
+            description;
+
           let image = this.extractImage(item);
 
-          /*
-           * 2. Si le RSS ne fournit aucune image,
-           *    on tente de récupérer og:image sur
-           *    la page originale.
-           */
           if (!image) {
             image = await this.extractOgImage(link);
           }
@@ -123,6 +119,7 @@ export class RSSService {
             sourceName: feed.name,
             title,
             description,
+            content,
             link,
             pubDate: item.pubDate ?? "",
             image,
@@ -130,38 +127,34 @@ export class RSSService {
         }
       } catch (error) {
         console.error(
-          `❌ Flux RSS indisponible : ${feed.name}`,
+          `❌ Impossible de récupérer le flux RSS : ${feed.name}`,
           error
         );
       }
     }
 
-    console.log(
-      `📰 Total RSS récupéré : ${articles.length} articles`
-    );
-
     return articles;
   }
 
   private extractImage(item: RSSItem): string {
-    if (item.mediaContent?.$?.url) {
-      return item.mediaContent.$.url;
+    if (item.enclosure?.url) {
+      return item.enclosure.url;
     }
 
     if (item.mediaContent?.url) {
       return item.mediaContent.url;
     }
 
-    if (item.mediaThumbnail?.$?.url) {
-      return item.mediaThumbnail.$.url;
+    if (item.mediaContent?.$?.url) {
+      return item.mediaContent.$.url;
     }
 
     if (item.mediaThumbnail?.url) {
       return item.mediaThumbnail.url;
     }
 
-    if (item.enclosure?.url) {
-      return item.enclosure.url;
+    if (item.mediaThumbnail?.$?.url) {
+      return item.mediaThumbnail.$.url;
     }
 
     return "";
@@ -172,10 +165,9 @@ export class RSSService {
       const response = await fetch(url, {
         headers: {
           "User-Agent":
-            "Mozilla/5.0 (compatible; TribuneFoot/1.0)",
-          Accept: "text/html,application/xhtml+xml",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/150 Safari/537.36",
         },
-        signal: AbortSignal.timeout(5000),
+        cache: "no-store",
       });
 
       if (!response.ok) {
@@ -184,48 +176,16 @@ export class RSSService {
 
       const html = await response.text();
 
-      /*
-       * Recherche d'un og:image classique :
-       *
-       * <meta property="og:image" content="...">
-       *
-       * ou :
-       *
-       * <meta content="..." property="og:image">
-       */
-
-      const ogImageMatch =
+      const match =
         html.match(
-          /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["'][^>]*>/i
+          /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i
         ) ||
         html.match(
-          /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["'][^>]*>/i
+          /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i
         );
 
-      if (!ogImageMatch?.[1]) {
-        return "";
-      }
-
-      const imageUrl = ogImageMatch[1].trim();
-
-      if (!imageUrl) {
-        return "";
-      }
-
-      /*
-       * Si l'image est relative, on la transforme
-       * en URL absolue.
-       */
-      try {
-        return new URL(imageUrl, url).toString();
-      } catch {
-        return "";
-      }
-    } catch (error) {
-      console.warn(
-        `⚠️ Impossible de récupérer l'image : ${url}`
-      );
-
+      return match?.[1]?.trim() ?? "";
+    } catch {
       return "";
     }
   }
