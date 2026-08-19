@@ -38,10 +38,19 @@ interface TeamsResponse {
 
 export class ClubImporter {
   async execute(): Promise<number> {
+    /*
+     * Map utilisé uniquement pendant l'import.
+     *
+     * L'id Football API sert à éviter les doublons pendant
+     * cette exécution.
+     *
+     * Il n'est PAS enregistré dans notre base Prisma.
+     */
     const clubs = new Map<number, ApiTeam>();
 
     console.log("");
     console.log("⚽ Récupération des clubs...");
+    console.log("");
 
     for (const competition of COMPETITIONS) {
       try {
@@ -71,7 +80,7 @@ export class ClubImporter {
           );
 
           console.warn(
-            "⏸️ Import des clubs interrompu pour cette exécution."
+            "⏹️ Import des clubs interrompu pour cette exécution."
           );
 
           break;
@@ -82,6 +91,7 @@ export class ClubImporter {
     }
 
     console.log("");
+
     console.log(
       `📊 ${clubs.size} clubs uniques récupérés.`
     );
@@ -89,20 +99,45 @@ export class ClubImporter {
     let imported = 0;
 
     for (const club of clubs.values()) {
-      const slug = slugify(club.name, {
-        lower: true,
-        strict: true,
-      });
+      /*
+       * ---------------------------------------------------------
+       * SLUG
+       * ---------------------------------------------------------
+       */
+
+      const slug =
+        slugify(club.name, {
+          lower: true,
+          strict: true,
+        }) || `club-${club.id}`;
+
+      /*
+       * ---------------------------------------------------------
+       * CRÉATION / MISE À JOUR
+       *
+       * Aucun externalId.
+       * ---------------------------------------------------------
+       */
 
       await footballDb.createClub({
-        externalId: club.id,
         name: club.name,
+
         slug,
-        country: club.area?.name ?? "Inconnu",
+
+        country:
+          club.area?.name ??
+          "Inconnu",
+
         city: undefined,
-        stadium: club.venue,
-        founded: club.founded,
-        logo: club.crest,
+
+        stadium:
+          club.venue,
+
+        founded:
+          club.founded,
+
+        logo:
+          club.crest,
       });
 
       imported++;
@@ -113,6 +148,7 @@ export class ClubImporter {
     }
 
     console.log("");
+
     console.log(
       `✅ ${imported} clubs importés ou mis à jour.`
     );

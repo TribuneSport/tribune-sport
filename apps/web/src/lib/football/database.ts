@@ -53,14 +53,6 @@ export class FootballDatabase {
     });
   }
 
-  async getClubByExternalId(externalId: number) {
-    return db.club.findUnique({
-      where: {
-        externalId,
-      },
-    });
-  }
-
   async getCompetitionBySlug(slug: string) {
     return db.competition.findUnique({
       where: {
@@ -85,8 +77,23 @@ export class FootballDatabase {
     });
   }
 
+  async getClubById(id: number) {
+    return db.club.findUnique({
+      where: {
+        id,
+      },
+    });
+  }
+
+  async getCompetitionById(id: number) {
+    return db.competition.findUnique({
+      where: {
+        id,
+      },
+    });
+  }
+
   async createClub(data: {
-    externalId: number;
     name: string;
     slug: string;
     country: string;
@@ -97,44 +104,19 @@ export class FootballDatabase {
     banner?: string;
     description?: string;
   }) {
-    const existingByExternalId = await db.club.findUnique({
+    const existingClub = await db.club.findUnique({
       where: {
-        externalId: data.externalId,
+        slug: data.slug,
       },
     });
 
-    if (existingByExternalId) {
+    if (existingClub) {
       return db.club.update({
         where: {
-          id: existingByExternalId.id,
+          id: existingClub.id,
         },
         data: {
           name: data.name,
-          slug: data.slug,
-          country: data.country,
-          city: data.city,
-          stadium: data.stadium,
-          founded: data.founded,
-          logo: data.logo,
-          banner: data.banner,
-          description: data.description,
-        },
-      });
-    }
-
-    const existingByName = await db.club.findUnique({
-      where: {
-        name: data.name,
-      },
-    });
-
-    if (existingByName) {
-      return db.club.update({
-        where: {
-          id: existingByName.id,
-        },
-        data: {
-          externalId: data.externalId,
           slug: data.slug,
           country: data.country,
           city: data.city,
@@ -159,52 +141,20 @@ export class FootballDatabase {
     logo?: string;
     season?: string;
   }) {
-    /*
-     * Vérification par slug.
-     *
-     * Le slug est unique dans la base.
-     */
-    const existingBySlug = await db.competition.findUnique({
-      where: {
-        slug: data.slug,
-      },
-    });
+    const existingCompetition =
+      await db.competition.findUnique({
+        where: {
+          slug: data.slug,
+        },
+      });
 
-    if (existingBySlug) {
+    if (existingCompetition) {
       return db.competition.update({
         where: {
-          id: existingBySlug.id,
+          id: existingCompetition.id,
         },
         data: {
           name: data.name,
-          country: data.country,
-          logo: data.logo,
-          season: data.season,
-        },
-      });
-    }
-
-    /*
-     * Vérification par nom.
-     *
-     * Le nom est également unique dans la base.
-     *
-     * Cela évite l'erreur :
-     *
-     * Unique constraint failed on the fields: (`name`)
-     */
-    const existingByName = await db.competition.findUnique({
-      where: {
-        name: data.name,
-      },
-    });
-
-    if (existingByName) {
-      return db.competition.update({
-        where: {
-          id: existingByName.id,
-        },
-        data: {
           slug: data.slug,
           country: data.country,
           logo: data.logo,
@@ -213,10 +163,6 @@ export class FootballDatabase {
       });
     }
 
-    /*
-     * Aucune compétition existante :
-     * création normale.
-     */
     return db.competition.create({
       data,
     });
@@ -233,23 +179,32 @@ export class FootballDatabase {
     photo?: string;
     clubId?: number;
   }) {
-    return db.player.upsert({
+    const existingPlayer = await db.player.findUnique({
       where: {
         slug: data.slug,
       },
+    });
 
-      update: {
-        firstname: data.firstname,
-        lastname: data.lastname,
-        nationality: data.nationality,
-        birthDate: data.birthDate,
-        position: data.position,
-        number: data.number,
-        photo: data.photo,
-        clubId: data.clubId,
-      },
+    if (existingPlayer) {
+      return db.player.update({
+        where: {
+          id: existingPlayer.id,
+        },
+        data: {
+          firstname: data.firstname,
+          lastname: data.lastname,
+          nationality: data.nationality,
+          birthDate: data.birthDate,
+          position: data.position,
+          number: data.number,
+          photo: data.photo,
+          clubId: data.clubId,
+        },
+      });
+    }
 
-      create: {
+    return db.player.create({
+      data: {
         firstname: data.firstname,
         lastname: data.lastname,
         slug: data.slug,

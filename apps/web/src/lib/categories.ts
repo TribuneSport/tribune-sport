@@ -1,9 +1,9 @@
 export const CATEGORY_MAP: Record<string, string> = {
   // France
-  "ligue 1": "Ligue 1",
-  "ligue1": "Ligue 1",
-  "l1": "Ligue 1",
-  "france": "Ligue 1",
+  "ligue 1": "France",
+  "ligue1": "France",
+  "l1": "France",
+  "france": "France",
 
   // Europe
   "premier league": "Europe",
@@ -14,10 +14,10 @@ export const CATEGORY_MAP: Record<string, string> = {
   "eredivisie": "Europe",
   "europe": "Europe",
 
-  // Coupes
-  "champions league": "Ligue des Champions",
-  "uefa champions league": "Ligue des Champions",
-  "ligue des champions": "Ligue des Champions",
+  // Coupes européennes
+  "champions league": "Europe",
+  "uefa champions league": "Europe",
+  "ligue des champions": "Europe",
   "europa league": "Europe",
 
   // Mercato
@@ -28,7 +28,13 @@ export const CATEGORY_MAP: Record<string, string> = {
 
   // International
   "world cup": "International",
+  "coupe du monde": "International",
+  "fifa": "International",
   "euro": "International",
+  "nation league": "International",
+  "copa america": "International",
+  "afcon": "International",
+  "can": "International",
   "international": "International",
 
   // Classements
