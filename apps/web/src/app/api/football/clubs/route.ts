@@ -1,6 +1,4 @@
-New-Item -ItemType Directory -Force apps/web/src/app/api/football/clubs | Out-Null
-
-@"
+﻿
 import { NextResponse } from "next/server";
 import { ClubImporter } from "@/importers/ClubImporter";
 
@@ -32,4 +30,3 @@ export async function POST() {
     );
   }
 }
-"@ | Set-Content apps/web/src/app/api/football/clubs/route.ts -Encoding UTF8

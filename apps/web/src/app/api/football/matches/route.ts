@@ -1,5 +1,4 @@
-@"
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { MatchImporter } from "@/importers/MatchImporter";
 
 export const dynamic = "force-dynamic";
@@ -32,4 +31,3 @@ export async function POST() {
     );
   }
 }
-"@ | Set-Content apps/web/src/app/api/football/matches/route.ts -Encoding UTF8

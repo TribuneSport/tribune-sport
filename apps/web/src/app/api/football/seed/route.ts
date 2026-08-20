@@ -1,5 +1,4 @@
-@"
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { FootballSeeder } from "@/importers/FootballSeeder";
 
 export const dynamic = "force-dynamic";
@@ -26,4 +25,3 @@ export async function POST() {
     );
   }
 }
-"@ | Set-Content apps/web/src/app/api/football/seed/route.ts -Encoding UTF8
