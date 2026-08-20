@@ -51,8 +51,11 @@ function removeDuplicateSummary(
       .trim()
       .toLowerCase();
 
-  const normalizedContent = normalize(cleanContent);
-  const normalizedSummary = normalize(cleanSummary);
+  const normalizedContent =
+    normalize(cleanContent);
+
+  const normalizedSummary =
+    normalize(cleanSummary);
 
   /*
    * Le contenu commence directement par le résumé.
@@ -70,16 +73,18 @@ function removeDuplicateSummary(
      * - <p>résumé</p>
      * - <p>résumé</p><p>suite...</p>
      */
-    const escapedSummary = cleanSummary.replace(
-      /[.*+?^${}()|[\]\\]/g,
-      "\\$&"
-    );
+    const escapedSummary =
+      cleanSummary.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&"
+      );
 
     const patterns = [
       new RegExp(
         `^\\s*<p[^>]*>\\s*${escapedSummary}\\s*</p>\\s*`,
         "i"
       ),
+
       new RegExp(
         `^\\s*${escapedSummary}\\s*`,
         "i"
@@ -87,10 +92,11 @@ function removeDuplicateSummary(
     ];
 
     for (const pattern of patterns) {
-      const result = cleanContent.replace(
-        pattern,
-        ""
-      );
+      const result =
+        cleanContent.replace(
+          pattern,
+          ""
+        );
 
       if (result !== cleanContent) {
         return result.trim();
@@ -99,8 +105,7 @@ function removeDuplicateSummary(
 
     /*
      * Si le résumé est légèrement différent
-     * à cause du HTML, on retire la longueur
-     * correspondant au texte du résumé.
+     * à cause du HTML, on retire le premier paragraphe.
      */
     const firstParagraphMatch =
       cleanContent.match(
@@ -108,9 +113,10 @@ function removeDuplicateSummary(
       );
 
     if (firstParagraphMatch) {
-      const firstParagraphText = normalize(
-        firstParagraphMatch[1]
-      );
+      const firstParagraphText =
+        normalize(
+          firstParagraphMatch[1]
+        );
 
       if (
         firstParagraphText ===
@@ -140,36 +146,105 @@ export async function generateMetadata({
     return {
       title:
         "Article introuvable | Tribune Foot",
+
       description:
         "Cet article n'existe pas ou n'est plus disponible.",
     };
   }
 
+  const articleTitle =
+    article.seoTitle ||
+    article.title;
+
+  const articleDescription =
+    article.seoDescription ||
+    article.summary ||
+    `Retrouvez toute l'actualité football sur Tribune Foot : ${article.title}`;
+
+  const canonicalUrl =
+    `${siteUrl}/article/${article.slug}`;
+
+  const publicationDate =
+    article.pubDate ||
+    article.createdAt;
+
   return {
-    title:
-      article.seoTitle ||
-      `${article.title} | Tribune Foot`,
+    title: articleTitle,
+
     description:
-      article.seoDescription ||
-      article.summary,
+      articleDescription,
+
+    alternates: {
+      canonical: canonicalUrl,
+    },
+
+    robots: {
+      index: true,
+      follow: true,
+
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
+    },
+
     openGraph: {
-      title:
-        article.seoTitle ||
-        article.title,
-      description:
-        article.seoDescription ||
-        article.summary,
       type: "article",
+
+      url: canonicalUrl,
+
+      siteName: "Tribune Foot",
+
+      locale: "fr_FR",
+
+      title: articleTitle,
+
+      description:
+        articleDescription,
+
+      publishedTime:
+        publicationDate.toISOString(),
+
+      modifiedTime:
+        article.updatedAt.toISOString(),
+
+      authors: [
+        "Tribune Foot",
+      ],
+
+      section:
+        article.category,
+
       images: article.image
         ? [
             {
               url: article.image,
+              alt: article.title,
             },
           ]
         : undefined,
     },
+
+    twitter: {
+      card: "summary_large_image",
+
+      title: articleTitle,
+
+      description:
+        articleDescription,
+
+      images: article.image
+        ? [article.image]
+        : undefined,
+    },
   };
 }
+
+const siteUrl =
+  "https://www.tribunesport.fr";
 
 export default async function ArticlePage({
   params,
@@ -188,8 +263,94 @@ export default async function ArticlePage({
       article.summary
     );
 
+  /*
+   * Date réellement fournie par le flux RSS.
+   *
+   * Si aucune date RSS n'existe,
+   * on utilise createdAt comme secours.
+   */
+  const publicationDate =
+    article.pubDate ||
+    article.createdAt;
+
+  const articleUrl =
+    `${siteUrl}/article/${article.slug}`;
+
+  /*
+   * ------------------------------------------------------------
+   * DONNÉES STRUCTURÉES NEWSARTICLE
+   * ------------------------------------------------------------
+   */
+
+  const newsArticleStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+
+    headline: article.title,
+
+    description:
+      article.seoDescription ||
+      article.summary ||
+      "",
+
+    url: articleUrl,
+
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": articleUrl,
+    },
+
+    datePublished:
+      publicationDate.toISOString(),
+
+    dateModified:
+      article.updatedAt.toISOString(),
+
+    articleSection:
+      article.category,
+
+    inLanguage: "fr-FR",
+
+    author: {
+      "@type": "Organization",
+      name: "Tribune Foot",
+      url: siteUrl,
+    },
+
+    publisher: {
+      "@type": "Organization",
+      name: "Tribune Foot",
+      url: siteUrl,
+
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/football.jpg`,
+      },
+    },
+
+    image: article.image
+      ? [
+          article.image,
+        ]
+      : [
+          `${siteUrl}/football.jpg`,
+        ],
+
+    isAccessibleForFree: true,
+  };
+
   return (
     <main className="min-h-screen bg-gray-50">
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            newsArticleStructuredData
+          ),
+        }}
+      />
+
       <article className="mx-auto max-w-5xl px-6 py-12">
 
         {/* Catégorie */}
@@ -207,11 +368,14 @@ export default async function ArticlePage({
         {/* Date */}
         <div className="mt-4 text-sm text-gray-500">
           Publié le{" "}
-          {new Intl.DateTimeFormat("fr-FR", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-          }).format(article.createdAt)}
+          {new Intl.DateTimeFormat(
+            "fr-FR",
+            {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            }
+          ).format(publicationDate)}
         </div>
 
         {/* Image */}
