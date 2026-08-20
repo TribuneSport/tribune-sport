@@ -27,6 +27,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "io-fsly-bfmtv.cdn.nextradiotv.com",
       },
+      {
+        protocol: "https",
+        hostname: "image.lessentiel.lu",
+      },
     ],
   },
 };
