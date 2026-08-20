@@ -1,24 +1,24 @@
 @"
 import { NextResponse } from "next/server";
-import { PlayerImporter } from "@/importers/PlayerImporter";
+import { MatchImporter } from "@/importers/MatchImporter";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST() {
   try {
-    console.log("IMPORT JOUEURS");
+    console.log("IMPORT MATCHS");
 
-    const importer = new PlayerImporter();
-    const players = await importer.execute();
+    const importer = new MatchImporter();
+    const matches = await importer.execute();
 
     return NextResponse.json({
       success: true,
-      step: "players",
-      players,
+      step: "matches",
+      matches,
     });
   } catch (error) {
-    console.error("ERREUR IMPORT JOUEURS :", error);
+    console.error("ERREUR IMPORT MATCHS :", error);
 
     return NextResponse.json(
       {
@@ -26,10 +26,10 @@ export async function POST() {
         error:
           error instanceof Error
             ? error.message
-            : "Erreur inconnue lors de l'import des joueurs.",
+            : "Erreur inconnue lors de l'import des matchs.",
       },
       { status: 500 }
     );
   }
 }
-"@ | Set-Content apps/web/src/app/api/football/players/route.ts -Encoding UTF8
+"@ | Set-Content apps/web/src/app/api/football/matches/route.ts -Encoding UTF8

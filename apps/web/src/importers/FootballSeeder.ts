@@ -1,64 +1,24 @@
+@"
 import { CompetitionImporter } from "./CompetitionImporter";
-import { ClubImporter } from "./ClubImporter";
-import { MatchImporter } from "./MatchImporter";
 
 export class FootballSeeder {
   async execute() {
     console.log("====================================");
     console.log("TRIBUNE FOOT");
-    console.log("INITIALISATION FOOTBALL");
+    console.log("INITIALISATION FOOTBALL - COMPETITIONS");
     console.log("====================================");
 
-    const competitionImporter =
-      new CompetitionImporter();
+    const importer = new CompetitionImporter();
 
-    const clubImporter =
-      new ClubImporter();
-
-    const matchImporter =
-      new MatchImporter();
-
-    console.log("");
-    console.log("Import des compétitions...");
-
-    const competitions =
-      await competitionImporter.execute();
-
-    console.log(
-      `${competitions} compétitions importées.`
-    );
-
-    console.log("");
-    console.log("Import des clubs...");
-
-    const clubs =
-      await clubImporter.execute();
-
-    console.log(
-      `${clubs} clubs importés.`
-    );
-
-    console.log("");
-    console.log("Import des matchs...");
-
-    const matches =
-      await matchImporter.execute();
-
-    console.log(
-      `${matches} matchs importés.`
-    );
-
-    console.log("");
-    console.log("Initialisation Football terminée.");
-    console.log("====================================");
+    const competitions = await importer.execute();
 
     return {
       success: true,
+      step: "competitions",
       competitions,
-      clubs,
-      matches,
     };
   }
 }
 
 export default FootballSeeder;
+"@ | Set-Content apps/web/src/importers/FootballSeeder.ts -Encoding UTF8

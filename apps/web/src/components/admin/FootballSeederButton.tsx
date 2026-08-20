@@ -1,50 +1,86 @@
-﻿"use client";
+﻿@"
+"use client";
 
 import { useState } from "react";
 
 export default function FootballSeederButton() {
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  async function runStep(url: string, label: string) {
+    setMessage(label);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const text = await response.text();
+
+    let data: any;
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(
+        "Réponse invalide du serveur : " +
+          (text || `HTTP ${response.status}`)
+      );
+    }
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.error ||
+          data.message ||
+          `Erreur HTTP ${response.status}`
+      );
+    }
+
+    return data;
+  }
 
   async function runSeeder() {
     if (loading) return;
 
     setLoading(true);
+    setMessage("Initialisation...");
 
     try {
-      const response = await fetch("/api/football/seed", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      await runStep(
+        "/api/football/seed",
+        "1/4 — Import des compétitions..."
+      );
 
-      const text = await response.text();
+      await runStep(
+        "/api/football/clubs",
+        "2/4 — Import des clubs..."
+      );
 
-      if (!response.ok) {
-        throw new Error(
-          `Erreur lors de l'initialisation (${response.status}) : ${text}`
-        );
-      }
+      await runStep(
+        "/api/football/players",
+        "3/4 — Import des joueurs..."
+      );
 
-      let data: any = null;
+      await runStep(
+        "/api/football/matches",
+        "4/4 — Import des matchs..."
+      );
 
-      try {
-        data = JSON.parse(text);
-      } catch {
-        data = null;
-      }
-
-      alert(
-        data?.message ||
-          "Base Football initialisée avec succès."
+      setMessage(
+        "Base Football initialisée avec succès."
       );
     } catch (error) {
-      console.error("Erreur lors de l'initialisation :", error);
+      console.error(
+        "Erreur initialisation Football :",
+        error
+      );
 
-      alert(
+      setMessage(
         error instanceof Error
           ? error.message
-          : "Erreur lors de l'initialisation."
+          : "Erreur pendant l'initialisation."
       );
     } finally {
       setLoading(false);
@@ -52,13 +88,24 @@ export default function FootballSeederButton() {
   }
 
   return (
-    <button
-      type="button"
-      onClick={runSeeder}
-      disabled={loading}
-      className="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      {loading ? "Initialisation..." : "Initialiser la base Football"}
-    </button>
+    <div className="flex flex-col gap-2">
+      <button
+        type="button"
+        onClick={runSeeder}
+        disabled={loading}
+        className="rounded-lg bg-green-600 px-4 py-2 font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {loading
+          ? "Initialisation en cours..."
+          : "Initialiser la base Football"}
+      </button>
+
+      {message && (
+        <p className="text-sm text-gray-600">
+          {message}
+        </p>
+      )}
+    </div>
   );
 }
+"@ | Set-Content apps/web/src/components/admin/FootballSeederButton.tsx -Encoding UTF8
