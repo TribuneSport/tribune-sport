@@ -1,17 +1,6 @@
 import { footballDb } from "@/lib/football/database";
 import { footballFetch } from "@/lib/football/api";
 
-const COMPETITIONS = [
-  "FL1",
-  "CL",
-  "PL",
-  "PD",
-  "SA",
-  "BL1",
-  "DED",
-  "PPL",
-];
-
 interface ApiMatch {
   id: number;
   utcDate: string;
@@ -38,79 +27,100 @@ interface MatchesResponse {
 
 export class MatchImporter {
   async execute(
-    competitionCode?: string
+    competitionCode: string,
+    dateFrom?: string,
+    dateTo?: string
   ): Promise<number> {
-    const codes = competitionCode
-      ? [competitionCode]
-      : COMPETITIONS;
+    const competition =
+      await footballDb.getCompetitionBySlug(
+        competitionCode.toLowerCase()
+      );
+
+    if (!competition) {
+      throw new Error(
+        `Compétition introuvable : ${competitionCode}`
+      );
+    }
+
+    let endpoint =
+      `/competitions/${competitionCode}/matches`;
+
+    const params = new URLSearchParams();
+
+    if (dateFrom) {
+      params.set("dateFrom", dateFrom);
+    }
+
+    if (dateTo) {
+      params.set("dateTo", dateTo);
+    }
+
+    if (params.toString()) {
+      endpoint += `?${params.toString()}`;
+    }
+
+    console.log(`Import matchs : ${endpoint}`);
+
+    const data =
+      await footballFetch<MatchesResponse>(endpoint);
+
+    if (!data.matches.length) {
+      return 0;
+    }
+
+    /*
+     * On charge les clubs une seule fois.
+     * Cela évite 2 requêtes Prisma par match.
+     */
+    const clubs = await footballDb.getAllClubs();
+
+    const clubsByName = new Map(
+      clubs.map((club) => [club.name, club])
+    );
 
     let imported = 0;
 
-    for (const code of codes) {
-      console.log(`Import matchs : ${code}`);
+    for (const match of data.matches) {
+      const homeClub =
+        clubsByName.get(match.homeTeam.name);
 
-      const competition =
-        await footballDb.getCompetitionBySlug(
-          code.toLowerCase()
-        );
+      const awayClub =
+        clubsByName.get(match.awayTeam.name);
 
-      if (!competition) {
+      if (!homeClub || !awayClub) {
         console.warn(
-          `Compétition absente : ${code}`
+          `Club introuvable : ${match.homeTeam.name} - ${match.awayTeam.name}`
         );
         continue;
       }
 
-      const data =
-        await footballFetch<MatchesResponse>(
-          `/competitions/${code}/matches`
-        );
+      const matchDate =
+        new Date(match.utcDate);
 
-      for (const match of data.matches) {
-        const homeClub =
-          await footballDb.getClubByName(
-            match.homeTeam.name
-          );
-
-        const awayClub =
-          await footballDb.getClubByName(
-            match.awayTeam.name
-          );
-
-        if (!homeClub || !awayClub) {
-          continue;
-        }
-
-        const matchDate =
-          new Date(match.utcDate);
-
-        if (
-          Number.isNaN(matchDate.getTime())
-        ) {
-          continue;
-        }
-
-        await footballDb.createMatch({
-          competitionId: competition.id,
-          homeClubId: homeClub.id,
-          awayClubId: awayClub.id,
-          matchDate,
-          homeScore:
-            match.score?.fullTime?.home ??
-            undefined,
-          awayScore:
-            match.score?.fullTime?.away ??
-            undefined,
-          status: match.status,
-        });
-
-        imported++;
+      if (Number.isNaN(matchDate.getTime())) {
+        continue;
       }
 
-      console.log(
-        `${code} : ${data.matches.length} matchs traités.`
-      );
+      await footballDb.createMatch({
+        competitionId: competition.id,
+        homeClubId: homeClub.id,
+        awayClubId: awayClub.id,
+        matchDate,
+        homeScore:
+          match.score?.fullTime?.home ??
+          undefined,
+        awayScore:
+          match.score?.fullTime?.away ??
+          undefined,
+        status: match.status,
+      });
+
+      imported++;
     }
+
+    console.log(
+      `${competitionCode} : ${imported} matchs traités.`
+    );
 
     return imported;
   }

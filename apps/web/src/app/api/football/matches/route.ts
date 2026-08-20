@@ -22,7 +22,17 @@ export async function POST(request: Request) {
     const competition =
       typeof body?.competition === "string"
         ? body.competition
-        : COMPETITIONS[0];
+        : "FL1";
+
+    const dateFrom =
+      typeof body?.dateFrom === "string"
+        ? body.dateFrom
+        : undefined;
+
+    const dateTo =
+      typeof body?.dateTo === "string"
+        ? body.dateTo
+        : undefined;
 
     if (!COMPETITIONS.includes(competition)) {
       return NextResponse.json(
@@ -36,13 +46,18 @@ export async function POST(request: Request) {
 
     const importer = new MatchImporter();
 
-    const matches =
-      await importer.execute(competition);
+    const matches = await importer.execute(
+      competition,
+      dateFrom,
+      dateTo
+    );
 
     return NextResponse.json({
       success: true,
       step: "matches",
       competition,
+      dateFrom,
+      dateTo,
       matches,
     });
   } catch (error) {

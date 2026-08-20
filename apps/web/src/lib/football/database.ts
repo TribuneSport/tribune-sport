@@ -1,6 +1,15 @@
 import { db } from "@/lib/db";
 
 export class FootballDatabase {
+  async getAllClubs() {
+    return db.club.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+  }
+
   async getClubBySlug(slug: string) {
     return db.club.findUnique({
       where: {
@@ -9,14 +18,12 @@ export class FootballDatabase {
       include: {
         articles: true,
         players: true,
-
         homeMatches: {
           include: {
             awayClub: true,
             competition: true,
           },
         },
-
         awayMatches: {
           include: {
             homeClub: true,
@@ -35,14 +42,12 @@ export class FootballDatabase {
       include: {
         articles: true,
         players: true,
-
         homeMatches: {
           include: {
             awayClub: true,
             competition: true,
           },
         },
-
         awayMatches: {
           include: {
             homeClub: true,
@@ -236,13 +241,11 @@ export class FootballDatabase {
           matchDate: data.matchDate,
         },
       },
-
       update: {
         homeScore: data.homeScore,
         awayScore: data.awayScore,
         status: data.status,
       },
-
       create: data,
     });
   }
