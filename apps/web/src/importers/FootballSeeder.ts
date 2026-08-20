@@ -1,5 +1,4 @@
-@"
-import { CompetitionImporter } from "./CompetitionImporter";
+﻿import { CompetitionImporter } from "./CompetitionImporter";
 
 export class FootballSeeder {
   async execute() {
@@ -21,4 +20,3 @@ export class FootballSeeder {
 }
 
 export default FootballSeeder;
-"@ | Set-Content apps/web/src/importers/FootballSeeder.ts -Encoding UTF8
