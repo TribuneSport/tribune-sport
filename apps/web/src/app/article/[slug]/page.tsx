@@ -22,6 +22,113 @@ async function getArticle(slug: string) {
   });
 }
 
+/*
+ * Supprime le résumé lorsqu'il est déjà présent
+ * au début du contenu de l'article.
+ *
+ * Le résumé reste affiché dans son encadré dédié.
+ */
+function removeDuplicateSummary(
+  content: string,
+  summary: string
+): string {
+  if (!content?.trim() || !summary?.trim()) {
+    return content;
+  }
+
+  const cleanContent = content.trim();
+  const cleanSummary = summary.trim();
+
+  /*
+   * Comparaison simple après suppression des balises HTML
+   * et normalisation des espaces.
+   */
+  const normalize = (value: string) =>
+    value
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+
+  const normalizedContent = normalize(cleanContent);
+  const normalizedSummary = normalize(cleanSummary);
+
+  /*
+   * Le contenu commence directement par le résumé.
+   */
+  if (
+    normalizedContent.startsWith(
+      normalizedSummary
+    )
+  ) {
+    /*
+     * On retire le résumé du début du HTML.
+     *
+     * Plusieurs formes sont prises en compte :
+     * - texte simple
+     * - <p>résumé</p>
+     * - <p>résumé</p><p>suite...</p>
+     */
+    const escapedSummary = cleanSummary.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
+
+    const patterns = [
+      new RegExp(
+        `^\\s*<p[^>]*>\\s*${escapedSummary}\\s*</p>\\s*`,
+        "i"
+      ),
+      new RegExp(
+        `^\\s*${escapedSummary}\\s*`,
+        "i"
+      ),
+    ];
+
+    for (const pattern of patterns) {
+      const result = cleanContent.replace(
+        pattern,
+        ""
+      );
+
+      if (result !== cleanContent) {
+        return result.trim();
+      }
+    }
+
+    /*
+     * Si le résumé est légèrement différent
+     * à cause du HTML, on retire la longueur
+     * correspondant au texte du résumé.
+     */
+    const firstParagraphMatch =
+      cleanContent.match(
+        /^\s*<p[^>]*>([\s\S]*?)<\/p>/i
+      );
+
+    if (firstParagraphMatch) {
+      const firstParagraphText = normalize(
+        firstParagraphMatch[1]
+      );
+
+      if (
+        firstParagraphText ===
+        normalizedSummary
+      ) {
+        return cleanContent
+          .replace(
+            firstParagraphMatch[0],
+            ""
+          )
+          .trim();
+      }
+    }
+  }
+
+  return content;
+}
+
 export async function generateMetadata({
   params,
 }: Props): Promise<Metadata> {
@@ -31,15 +138,17 @@ export async function generateMetadata({
 
   if (!article) {
     return {
-      title: "Article introuvable | Tribune Sport",
-      description: "Cet article n'existe pas ou n'est plus disponible.",
+      title:
+        "Article introuvable | Tribune Foot",
+      description:
+        "Cet article n'existe pas ou n'est plus disponible.",
     };
   }
 
   return {
     title:
       article.seoTitle ||
-      `${article.title} | Tribune Sport`,
+      `${article.title} | Tribune Foot`,
     description:
       article.seoDescription ||
       article.summary,
@@ -72,6 +181,12 @@ export default async function ArticlePage({
   if (!article) {
     notFound();
   }
+
+  const articleContent =
+    removeDuplicateSummary(
+      article.content,
+      article.summary
+    );
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -131,7 +246,7 @@ export default async function ArticlePage({
             md:p-10
           "
           dangerouslySetInnerHTML={{
-            __html: article.content,
+            __html: articleContent,
           }}
         />
 
