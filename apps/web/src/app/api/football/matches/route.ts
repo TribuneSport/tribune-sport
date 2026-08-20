@@ -4,20 +4,52 @@ import { MatchImporter } from "@/importers/MatchImporter";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-export async function POST() {
+const COMPETITIONS = [
+  "FL1",
+  "CL",
+  "PL",
+  "PD",
+  "SA",
+  "BL1",
+  "DED",
+  "PPL",
+];
+
+export async function POST(request: Request) {
   try {
-    console.log("IMPORT MATCHS");
+    const body = await request.json().catch(() => ({}));
+
+    const competition =
+      typeof body?.competition === "string"
+        ? body.competition
+        : COMPETITIONS[0];
+
+    if (!COMPETITIONS.includes(competition)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Compétition invalide.",
+        },
+        { status: 400 }
+      );
+    }
 
     const importer = new MatchImporter();
-    const matches = await importer.execute();
+
+    const matches =
+      await importer.execute(competition);
 
     return NextResponse.json({
       success: true,
       step: "matches",
+      competition,
       matches,
     });
   } catch (error) {
-    console.error("ERREUR IMPORT MATCHS :", error);
+    console.error(
+      "ERREUR IMPORT MATCHS :",
+      error
+    );
 
     return NextResponse.json(
       {
@@ -25,7 +57,7 @@ export async function POST() {
         error:
           error instanceof Error
             ? error.message
-            : "Erreur inconnue lors de l'import des matchs.",
+            : "Erreur inconnue.",
       },
       { status: 500 }
     );
