@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "img.uefa.com",
       },
+      {
+        protocol: "https",
+        hostname: "io-fsly-bfmtv.cdn.nextradiotv.com",
+      },
     ],
   },
 };
