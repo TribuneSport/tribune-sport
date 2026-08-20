@@ -40,15 +40,6 @@ type RSSItem = {
     };
   };
 
-  "media:group"?: {
-    "media:content"?: {
-      url?: string;
-      $?: {
-        url?: string;
-      };
-    };
-  };
-
   image?: {
     url?: string;
   };
@@ -58,6 +49,7 @@ type RSSFeed = {
   name: string;
   club: string;
   url: string;
+  priority: "France" | "Francophone";
 };
 
 export type RSSArticle = {
@@ -76,46 +68,284 @@ const parser = new Parser<{}, RSSItem>({
     item: [
       ["media:content", "mediaContent", { keepArray: false }],
       ["media:thumbnail", "mediaThumbnail", { keepArray: false }],
-      ["media:group", "mediaGroup", { keepArray: false }],
     ],
   },
 });
 
 export class RSSService {
   async getSources(): Promise<RSSArticle[]> {
+    /*
+     * ============================================================
+     * SOURCES RSS
+     * ============================================================
+     *
+     * PRIORITÉ 1 :
+     * Médias français
+     *
+     * PRIORITÉ 2 :
+     * Médias francophones internationaux
+     *
+     * L'ordre est volontaire :
+     * les sources françaises sont interrogées en premier.
+     */
+
     const feeds: RSSFeed[] = [
+      /*
+       * ============================================================
+       * 🇫🇷 FRANCE — PRIORITÉ
+       * ============================================================
+       */
+
       {
         name: "RMC Sport",
         club: "Football",
         url: "https://rmcsport.bfmtv.com/rss/football/",
+        priority: "France",
       },
+
+      {
+        name: "L'Équipe",
+        club: "Football",
+        url: "https://dwh.lequipe.fr/api/edito/rss?path=/Football/",
+        priority: "France",
+      },
+
       {
         name: "Le Figaro Football",
         club: "Football",
         url: "https://www.lefigaro.fr/rss/figaro_football.xml",
+        priority: "France",
       },
+
+      {
+        name: "FootMercato",
+        club: "Football",
+        url: "https://www.footmercato.net/rss",
+        priority: "France",
+      },
+
+      {
+        name: "Foot National Ligue 1",
+        club: "Ligue 1",
+        url: "https://www.foot-national.com/rss/ligue-1.html",
+        priority: "France",
+      },
+
+      {
+        name: "Foot National Ligue 2",
+        club: "Ligue 2",
+        url: "https://www.foot-national.com/rss/ligue-2.html",
+        priority: "France",
+      },
+
+      {
+        name: "La Dépêche Football",
+        club: "Football",
+        url: "https://www.ladepeche.fr/sport/football/rss.xml",
+        priority: "France",
+      },
+
+      {
+        name: "L'Indépendant Football",
+        club: "Football",
+        url: "https://www.lindependant.fr/sport/football/rss.xml",
+        priority: "France",
+      },
+
+      {
+        name: "Midi Libre Football",
+        club: "Football",
+        url: "https://www.midilibre.fr/sport/football/rss.xml",
+        priority: "France",
+      },
+
+      {
+        name: "Sud Ouest Football",
+        club: "Football",
+        url: "https://www.sudouest.fr/sport/football/rss.xml",
+        priority: "France",
+      },
+
+      {
+        name: "Lyon Foot",
+        club: "Football",
+        url: "https://www.lyonfoot.com/rss",
+        priority: "France",
+      },
+
+      {
+        name: "Football Club Marseille",
+        club: "OM",
+        url: "https://www.footballclubdemarseille.fr/feed",
+        priority: "France",
+      },
+
+      {
+        name: "Foot en France",
+        club: "Football",
+        url: "https://www.footenfrance.fr/xml/syndication.rss",
+        priority: "France",
+      },
+
+      {
+        name: "Dico du Sport",
+        club: "Football",
+        url: "https://dicodusport.fr/blog/actualites/football/feed/",
+        priority: "France",
+      },
+
+      {
+        name: "Sports.fr",
+        club: "Football",
+        url: "https://www.sports.fr/football/feed",
+        priority: "France",
+      },
+
+      {
+        name: "Sport.fr",
+        club: "Football",
+        url: "https://www.sport.fr/category/football/feed",
+        priority: "France",
+      },
+
+      {
+        name: "Afrik-Foot",
+        club: "Football Afrique",
+        url: "https://www.afrik-foot.com/feed",
+        priority: "France",
+      },
+
+      {
+        name: "Foot Afrique 24",
+        club: "Football Afrique",
+        url: "https://footafrique24.com/feed/",
+        priority: "France",
+      },
+
+      /*
+       * ============================================================
+       * 🌍 FRANCOPHONE INTERNATIONAL
+       * ============================================================
+       */
+
+      {
+        name: "RFI Football",
+        club: "International",
+        url: "https://www.rfi.fr/fr/tag/football/rss",
+        priority: "Francophone",
+      },
+
+      {
+        name: "RFI Afrique Football",
+        club: "Afrique",
+        url: "https://www.rfi.fr/fr/afrique-foot/rss",
+        priority: "Francophone",
+      },
+
+      {
+        name: "RTS Football",
+        club: "Suisse",
+        url: "https://www.rts.ch/sport/football/?format=rss/news",
+        priority: "Francophone",
+      },
+
+      {
+        name: "Radio-Canada Soccer",
+        club: "Canada",
+        url: "https://ici.radio-canada.ca/info/rss/sous-theme/soccer",
+        priority: "Francophone",
+      },
+
+      {
+        name: "7sur7 Football",
+        club: "Belgique",
+        url: "https://www.7sur7.be/football/rss.xml",
+        priority: "Francophone",
+      },
+
+      {
+        name: "7sur7 Football belge",
+        club: "Belgique",
+        url: "https://www.7sur7.be/football-belge/rss.xml",
+        priority: "Francophone",
+      },
+
+      {
+        name: "7sur7 Football étranger",
+        club: "International",
+        url: "https://www.7sur7.be/football-etranger/rss.xml",
+        priority: "Francophone",
+      },
+
+      {
+        name: "7sur7 Diables Rouges",
+        club: "Belgique",
+        url: "https://www.7sur7.be/diables-rouges/rss.xml",
+        priority: "Francophone",
+      },
+
+      {
+        name: "La Presse Soccer",
+        club: "Canada",
+        url: "https://www.lapresse.ca/sports/soccer/rss",
+        priority: "Francophone",
+      },
+
+      {
+        name: "RTL Info Football",
+        club: "Belgique",
+        url: "http://feeds.feedburner.com/rtlsport/football?format=xml",
+        priority: "Francophone",
+      },
+
+      {
+        name: "L'Essentiel Football",
+        club: "Luxembourg",
+        url: "https://partner-feeds.lessentiel.lu/rss/lessentiel-fr/sports/football",
+        priority: "Francophone",
+      },
+
+      /*
+       * ============================================================
+       * 🌍 INTERNATIONAL — SOURCES COMPLÉMENTAIRES
+       * ============================================================
+       */
+
       {
         name: "UEFA",
         club: "UEFA",
         url: "https://www.uefa.com/rssfeed/news/rss.xml",
+        priority: "Francophone",
       },
+
       {
         name: "BBC Sport Football",
-        club: "Football",
+        club: "International",
         url: "https://feeds.bbci.co.uk/sport/football/rss.xml",
+        priority: "Francophone",
       },
+
       {
         name: "The Guardian Football",
-        club: "Football",
+        club: "International",
         url: "https://www.theguardian.com/football/rss",
+        priority: "Francophone",
       },
     ];
 
     const articles: RSSArticle[] = [];
 
+    /*
+     * ============================================================
+     * IMPORT DES FLUX
+     * ============================================================
+     */
+
     for (const feed of feeds) {
       try {
-        console.log(`📡 RSS : ${feed.name}`);
+        console.log(
+          `📡 RSS [${feed.priority}] : ${feed.name}`
+        );
 
         const rss = await parser.parseURL(feed.url);
 
@@ -124,8 +354,11 @@ export class RSSService {
         );
 
         for (const item of rss.items) {
-          const title = item.title?.trim() ?? "";
-          const link = item.link?.trim() ?? "";
+          const title =
+            item.title?.trim() ?? "";
+
+          const link =
+            item.link?.trim() ?? "";
 
           if (!title || !link) {
             continue;
@@ -141,24 +374,31 @@ export class RSSService {
             item.contentSnippet?.trim() ||
             description;
 
-          let image = this.extractImage(item);
+          /*
+           * --------------------------------------------------------
+           * IMAGE
+           * --------------------------------------------------------
+           */
+
+          let image =
+            this.extractImage(item);
 
           /*
-           * Si le flux RSS ne fournit pas directement l'image,
-           * on récupère l'image Open Graph de la page.
+           * Image dans le HTML RSS
            */
           if (!image) {
-            image = await this.extractOgImage(link);
+            image =
+              this.extractImageFromHtml(
+                item.content || ""
+              );
           }
 
           /*
-           * Certaines images sont encodées dans le contenu HTML
-           * de l'article RSS.
+           * Image Open Graph
            */
           if (!image) {
-            image = this.extractImageFromHtml(
-              item.content || ""
-            );
+            image =
+              await this.extractOgImage(link);
           }
 
           articles.push({
@@ -168,11 +408,17 @@ export class RSSService {
             description,
             content,
             link,
-            pubDate: item.pubDate ?? "",
+            pubDate:
+              item.pubDate ?? "",
             image,
           });
         }
       } catch (error) {
+        /*
+         * Une source qui tombe ne doit jamais
+         * bloquer les autres sources.
+         */
+
         console.error(
           `❌ Impossible de récupérer le flux RSS : ${feed.name}`,
           error
@@ -180,100 +426,152 @@ export class RSSService {
       }
     }
 
+    console.log(
+      `📰 Total articles RSS récupérés : ${articles.length}`
+    );
+
     return articles;
   }
 
-  private extractImage(item: RSSItem): string {
+  /*
+   * ============================================================
+   * EXTRACTION IMAGE RSS
+   * ============================================================
+   */
+
+  private extractImage(
+    item: RSSItem
+  ): string {
     /*
      * 1. enclosure
      */
+
     if (item.enclosure?.url) {
-      return item.enclosure.url.trim();
+      return this.cleanImageUrl(
+        item.enclosure.url
+      );
     }
 
     /*
      * 2. media:content
      */
+
     if (item.mediaContent?.url) {
-      return item.mediaContent.url.trim();
+      return this.cleanImageUrl(
+        item.mediaContent.url
+      );
     }
 
     if (item.mediaContent?.$?.url) {
-      return item.mediaContent.$.url.trim();
+      return this.cleanImageUrl(
+        item.mediaContent.$.url
+      );
     }
 
     /*
      * 3. media:thumbnail
      */
+
     if (item.mediaThumbnail?.url) {
-      return item.mediaThumbnail.url.trim();
+      return this.cleanImageUrl(
+        item.mediaThumbnail.url
+      );
     }
 
     if (item.mediaThumbnail?.$?.url) {
-      return item.mediaThumbnail.$.url.trim();
+      return this.cleanImageUrl(
+        item.mediaThumbnail.$.url
+      );
     }
 
     /*
-     * 4. Champs XML bruts éventuels
+     * 4. XML brut
      */
+
     if (item["media:content"]?.url) {
-      return item["media:content"].url.trim();
+      return this.cleanImageUrl(
+        item["media:content"].url
+      );
     }
 
     if (item["media:content"]?.$?.url) {
-      return item["media:content"].$.url.trim();
+      return this.cleanImageUrl(
+        item["media:content"].$.url
+      );
     }
 
     if (item["media:thumbnail"]?.url) {
-      return item["media:thumbnail"].url.trim();
+      return this.cleanImageUrl(
+        item["media:thumbnail"].url
+      );
     }
 
     if (item["media:thumbnail"]?.$?.url) {
-      return item["media:thumbnail"].$.url.trim();
+      return this.cleanImageUrl(
+        item["media:thumbnail"].$.url
+      );
     }
 
     /*
-     * 5. Champ image standard éventuel
+     * 5. Champ image
      */
+
     if (item.image?.url) {
-      return item.image.url.trim();
+      return this.cleanImageUrl(
+        item.image.url
+      );
     }
 
     return "";
   }
 
-  private extractImageFromHtml(html: string): string {
+  /*
+   * ============================================================
+   * IMAGE DANS HTML RSS
+   * ============================================================
+   */
+
+  private extractImageFromHtml(
+    html: string
+  ): string {
     if (!html) {
       return "";
     }
 
     /*
-     * <img src="...">
+     * src=""
      */
+
     const imgMatch =
       html.match(
         /<img[^>]+src=["']([^"']+)["']/i
       );
 
     if (imgMatch?.[1]) {
-      return this.cleanImageUrl(imgMatch[1]);
+      return this.cleanImageUrl(
+        imgMatch[1]
+      );
     }
 
     /*
-     * data-src="..."
+     * data-src=""
      */
+
     const dataSrcMatch =
       html.match(
         /data-src=["']([^"']+)["']/i
       );
 
     if (dataSrcMatch?.[1]) {
-      return this.cleanImageUrl(dataSrcMatch[1]);
+      return this.cleanImageUrl(
+        dataSrcMatch[1]
+      );
     }
 
     /*
-     * srcset="..."
+     * srcset=""
      */
+
     const srcsetMatch =
       html.match(
         /srcset=["']([^"']+)["']/i
@@ -287,36 +585,50 @@ export class RSSService {
           ?.split(" ")[0];
 
       if (firstImage) {
-        return this.cleanImageUrl(firstImage);
+        return this.cleanImageUrl(
+          firstImage
+        );
       }
     }
 
     return "";
   }
 
+  /*
+   * ============================================================
+   * IMAGE OPEN GRAPH
+   * ============================================================
+   */
+
   private async extractOgImage(
     url: string
   ): Promise<string> {
     try {
-      const response = await fetch(url, {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/150 Safari/537.36",
-          Accept:
-            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-        },
-        cache: "no-store",
-      });
+      const response =
+        await fetch(url, {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/150 Safari/537.36",
+
+            Accept:
+              "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+          },
+
+          cache: "no-store",
+        });
 
       if (!response.ok) {
         return "";
       }
 
-      const html = await response.text();
+      const html =
+        await response.text();
 
       /*
-       * og:image avec property avant content
+       * og:image
+       * property → content
        */
+
       const propertyFirst =
         html.match(
           /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i
@@ -329,8 +641,10 @@ export class RSSService {
       }
 
       /*
-       * og:image avec content avant property
+       * og:image
+       * content → property
        */
+
       const contentFirst =
         html.match(
           /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i
@@ -345,6 +659,7 @@ export class RSSService {
       /*
        * Twitter image
        */
+
       const twitterImage =
         html.match(
           /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i
@@ -357,8 +672,10 @@ export class RSSService {
       }
 
       /*
-       * Variante content avant name
+       * Twitter image
+       * content → name
        */
+
       const twitterImageReverse =
         html.match(
           /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i
@@ -376,6 +693,12 @@ export class RSSService {
     }
   }
 
+  /*
+   * ============================================================
+   * NETTOYAGE URL IMAGE
+   * ============================================================
+   */
+
   private cleanImageUrl(
     value: string
   ): string {
@@ -388,8 +711,12 @@ export class RSSService {
           .trim();
 
       if (
-        decoded.startsWith("http://") ||
-        decoded.startsWith("https://")
+        decoded.startsWith(
+          "http://"
+        ) ||
+        decoded.startsWith(
+          "https://"
+        )
       ) {
         return decoded;
       }

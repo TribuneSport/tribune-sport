@@ -1,84 +1,189 @@
 type Category = {
   name: string;
   keywords: string[];
+  strongKeywords?: string[];
 };
 
 const categories: Category[] = [
   {
     name: "Mercato",
-    keywords: [
-      "transfer",
-      "transfers",
+
+    strongKeywords: [
       "mercato",
-      "signs",
+      "transfert",
+      "transferts",
+      "transfere",
+      "transféré",
+      "recrutement",
+      "recrute",
+      "recruter",
+      "recruté",
+      "signing",
       "signed",
       "loan",
-      "contract",
-      "medical",
       "deal",
       "agreement",
-      "joins",
-      "departure",
-      "arrival",
-      "recruit",
-      "recrute",
+      "medical",
       "prolonge",
+      "prolongation",
       "extension",
-      "transfert",
+      "contrat",
       "pret",
       "prêt",
-      "contrat",
-      "prolongation",
-      "recrutement",
+      "arrivée",
+      "arrivee",
+      "départ",
+      "depart",
+    ],
+
+    keywords: [
+      "joins",
+      "join",
+      "departure",
+      "arrival",
+      "contract",
+      "recruit",
+      "recrue",
+      "nouvelle recrue",
+      "nouveau joueur",
+      "nouvel attaquant",
+      "nouveau milieu",
+      "nouveau defenseur",
+      "nouveau gardien",
+      "piste",
+      "cible",
+      "cible le",
+      "intérêt",
+      "interet",
+      "négociations",
+      "negociations",
     ],
   },
 
   {
     name: "Ligue des Champions",
-    keywords: [
-      "champions league",
-      "uefa champions",
-      "uefa champions league",
-      "ucl",
+
+    strongKeywords: [
       "ligue des champions",
+      "champions league",
+      "uefa champions league",
+      "uefa champions",
+    ],
+
+    keywords: [
+      "ucl",
+      "champions",
+      "phase de ligue",
+      "barrages de la ligue des champions",
+      "qualification ligue des champions",
     ],
   },
 
   {
     name: "International",
-    keywords: [
-      "world cup",
+
+    strongKeywords: [
       "coupe du monde",
+      "world cup",
+      "nations league",
+      "copa america",
+      "coupe d'afrique des nations",
+      "coupe d'afrique",
+      "afcon",
+    ],
+
+    keywords: [
       "fifa",
       "international",
       "euro",
       "euro 2024",
       "euro 2028",
       "euro 2032",
-      "nations league",
       "nation league",
-      "copa america",
-      "afcon",
-      "coupe d'afrique",
-      "coupe d'afrique des nations",
-      "can 202",
+      "sélection",
+      "selection nationale",
+      "équipe nationale",
+      "equipe nationale",
+    ],
+  },
+
+  {
+    name: "France",
+
+    strongKeywords: [
+      "ligue 1",
+      "ligue1",
+      "ligue 2",
+      "ligue2",
+      "paris saint-germain",
+      "paris saint germain",
+      "olympique de marseille",
+      "olympique lyonnais",
+      "as monaco",
+      "rc lens",
+      "fc metz",
+      "rc strasbourg",
+      "stade rennais",
+      "ogc nice",
+      "fc nantes",
+      "losc",
+    ],
+
+    keywords: [
+      "psg",
+      "marseille",
+      "lyon",
+      "monaco",
+      "lille",
+      "lens",
+      "rennes",
+      "nice",
+      "nantes",
+      "montpellier",
+      "strasbourg",
+      "metz",
+      "brest",
+      "reims",
+      "auxerre",
+      "toulouse",
+      "angers",
+      "lorient",
+      "saint-etienne",
+      "saint etienne",
+      "asse",
+      "le havre",
+      "havre",
+      "championnat de france",
+      "football français",
+      "football francais",
+      "coupe de france",
+      "trophée des champions",
+      "ligue 1+",
     ],
   },
 
   {
     name: "Europe",
-    keywords: [
-      /*
-       * Angleterre
-       */
+
+    strongKeywords: [
       "premier league",
-      "premiership",
-      "championship",
-      "efl championship",
-      "league one",
-      "league two",
-      "fa cup",
-      "carabao cup",
+      "la liga",
+      "laliga",
+      "serie a",
+      "bundesliga",
+      "eredivisie",
+      "primeira liga",
+      "liga portugal",
+      "jupiler pro league",
+      "scottish premiership",
+      "super lig",
+      "europa league",
+      "conference league",
+      "uefa europa league",
+      "uefa conference league",
+    ],
+
+    keywords: [
       "arsenal",
       "chelsea",
       "liverpool",
@@ -99,11 +204,6 @@ const categories: Category[] = [
       "southampton",
       "leeds united",
 
-      /*
-       * Espagne
-       */
-      "la liga",
-      "laliga",
       "real madrid",
       "real de madrid",
       "barcelona",
@@ -114,25 +214,16 @@ const categories: Category[] = [
       "valencia",
       "villarreal",
 
-      /*
-       * Italie
-       */
-      "serie a",
       "juventus",
       "inter milan",
       "internazionale",
       "ac milan",
-      "milan",
       "napoli",
       "roma",
       "as roma",
       "lazio",
       "atalanta",
 
-      /*
-       * Allemagne
-       */
-      "bundesliga",
       "bayern",
       "bayern munich",
       "borussia dortmund",
@@ -141,137 +232,43 @@ const categories: Category[] = [
       "leverkusen",
       "rb leipzig",
 
-      /*
-       * Pays-Bas
-       */
-      "eredivisie",
       "ajax",
       "psv",
       "feyenoord",
 
-      /*
-       * Portugal
-       */
-      "liga portugal",
-      "primeira liga",
       "benfica",
       "porto",
       "sporting lisbon",
 
-      /*
-       * Belgique
-       */
-      "jupiler pro league",
       "anderlecht",
       "club brugge",
 
-      /*
-       * Écosse
-       */
-      "scottish premiership",
       "celtic",
       "rangers",
 
-      /*
-       * Turquie
-       */
-      "super lig",
       "galatasaray",
       "fenerbahce",
       "besiktas",
-
-      /*
-       * Compétitions européennes
-       */
-      "europa league",
-      "uefa europa league",
-      "conference league",
-      "uefa conference league",
-      "uefa",
-    ],
-  },
-
-  {
-    name: "France",
-    keywords: [
-      "ligue 1",
-      "ligue1",
-      "ligue 2",
-      "ligue2",
-
-      "paris saint-germain",
-      "paris saint germain",
-      "psg",
-
-      "olympique de marseille",
-      "marseille",
-
-      "olympique lyonnais",
-      "lyon",
-
-      "as monaco",
-      "monaco",
-
-      "losc",
-      "lille",
-
-      "rc lens",
-      "lens",
-
-      "stade rennais",
-      "rennes",
-
-      "ogc nice",
-      "nice",
-
-      "fc nantes",
-      "nantes",
-
-      "montpellier",
-
-      "rc strasbourg",
-      "strasbourg",
-
-      "fc metz",
-      "metz",
-
-      "stade brestois",
-      "brest",
-
-      "stade de reims",
-      "reims",
-
-      "aj auxerre",
-      "auxerre",
-
-      "toulouse fc",
-      "toulouse",
-
-      "angers sco",
-      "angers",
-
-      "fc lorient",
-      "lorient",
-
-      "saint-etienne",
-      "saint etienne",
-      "asse",
-
-      "le havre",
-      "havre",
     ],
   },
 
   {
     name: "Classements",
-    keywords: [
-      "standings",
-      "ranking",
-      "league table",
-      "table",
+
+    strongKeywords: [
       "classement",
-      "leader",
       "classements",
+      "standings",
+      "league table",
+    ],
+
+    keywords: [
+      "ranking",
+      "table",
+      "position au classement",
+      "au classement",
+      "leader du championnat",
+      "leader",
     ],
   },
 ];
@@ -281,20 +278,33 @@ function normalize(value: string): string {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[’']/g, "'")
+    .replace(/[’]/g, "'")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function containsKeyword(text: string, keyword: string): boolean {
+function containsKeyword(
+  text: string,
+  keyword: string
+): boolean {
   const normalizedKeyword = normalize(keyword);
 
+  if (!normalizedKeyword) {
+    return false;
+  }
+
   /*
-   * Pour les termes très courts, on exige des limites de mots.
+   * Pour les mots courts, on utilise des limites
+   * de mots afin d'éviter les faux positifs.
    */
-  if (normalizedKeyword.length <= 3) {
+  if (normalizedKeyword.length <= 4) {
+    const escaped = normalizedKeyword.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
+
     const regex = new RegExp(
-      `(^|\\s)${normalizedKeyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|\\s)`,
+      `(^|\\s|[^a-z0-9])${escaped}($|\\s|[^a-z0-9])`,
       "i"
     );
 
@@ -308,26 +318,176 @@ export function detectCategory(
   title: string,
   summary: string
 ): string {
-  const text = normalize(`${title} ${summary}`);
+  const titleText = normalize(title);
+  const summaryText = normalize(summary);
 
-  /*
-   * Priorité :
-   * 1. Mercato
-   * 2. Ligue des Champions
-   * 3. International
-   * 4. Europe
-   * 5. France
-   * 6. Classements
-   */
+  const fullText =
+    `${titleText} ${summaryText}`.trim();
+
+  const scores: Record<string, number> = {};
+
   for (const category of categories) {
-    const found = category.keywords.some((keyword) =>
-      containsKeyword(text, keyword)
-    );
+    let score = 0;
 
-    if (found) {
-      return category.name;
+    /*
+     * Les mots trouvés dans le titre ont davantage
+     * d'importance que ceux trouvés dans le résumé.
+     */
+
+    for (const keyword of category.strongKeywords ?? []) {
+      if (containsKeyword(titleText, keyword)) {
+        score += 10;
+      }
+
+      if (containsKeyword(summaryText, keyword)) {
+        score += 5;
+      }
     }
+
+    for (const keyword of category.keywords) {
+      if (containsKeyword(titleText, keyword)) {
+        score += 4;
+      }
+
+      if (containsKeyword(summaryText, keyword)) {
+        score += 2;
+      }
+    }
+
+    scores[category.name] = score;
   }
 
+  /*
+   * ---------------------------------------------------------
+   * PRIORITÉS ÉDITORIALES
+   * ---------------------------------------------------------
+   *
+   * Certaines catégories doivent gagner même lorsqu'un
+   * article contient des termes appartenant à plusieurs
+   * catégories.
+   */
+
+  const mercatoScore = scores["Mercato"] ?? 0;
+  const championsScore =
+    scores["Ligue des Champions"] ?? 0;
+  const internationalScore =
+    scores["International"] ?? 0;
+  const franceScore = scores["France"] ?? 0;
+  const europeScore = scores["Europe"] ?? 0;
+  const classementScore =
+    scores["Classements"] ?? 0;
+
+  /*
+   * Mercato est prioritaire lorsqu'il est réellement
+   * identifié dans le titre.
+   */
+  if (
+    containsKeyword(titleText, "mercato") ||
+    containsKeyword(titleText, "transfert") ||
+    containsKeyword(titleText, "transferts") ||
+    containsKeyword(titleText, "recrute") ||
+    containsKeyword(titleText, "recrutement") ||
+    containsKeyword(titleText, "prolonge") ||
+    containsKeyword(titleText, "prolongation")
+  ) {
+    return "Mercato";
+  }
+
+  /*
+   * Une mention explicite de la Ligue des Champions
+   * doit toujours prendre cette catégorie.
+   */
+  if (
+    containsKeyword(
+      titleText,
+      "ligue des champions"
+    ) ||
+    containsKeyword(
+      titleText,
+      "champions league"
+    ) ||
+    containsKeyword(
+      titleText,
+      "uefa champions league"
+    )
+  ) {
+    return "Ligue des Champions";
+  }
+
+  /*
+   * Les compétitions internationales explicites
+   * passent avant Europe et France.
+   */
+  if (
+    containsKeyword(
+      titleText,
+      "coupe du monde"
+    ) ||
+    containsKeyword(titleText, "world cup") ||
+    containsKeyword(titleText, "euro") ||
+    containsKeyword(
+      titleText,
+      "nations league"
+    )
+  ) {
+    return "International";
+  }
+
+  /*
+   * Si le titre parle explicitement de classement,
+   * on utilise Classements.
+   */
+  if (
+    containsKeyword(titleText, "classement") ||
+    containsKeyword(titleText, "classements") ||
+    containsKeyword(titleText, "standings") ||
+    containsKeyword(titleText, "league table")
+  ) {
+    return "Classements";
+  }
+
+  /*
+   * Ensuite on compare les scores.
+   */
+  const rankedCategories = [
+    {
+      name: "Mercato",
+      score: mercatoScore,
+    },
+    {
+      name: "Ligue des Champions",
+      score: championsScore,
+    },
+    {
+      name: "International",
+      score: internationalScore,
+    },
+    {
+      name: "France",
+      score: franceScore,
+    },
+    {
+      name: "Europe",
+      score: europeScore,
+    },
+    {
+      name: "Classements",
+      score: classementScore,
+    },
+  ];
+
+  rankedCategories.sort(
+    (a, b) => b.score - a.score
+  );
+
+  const best = rankedCategories[0];
+
+  if (best && best.score > 0) {
+    return best.name;
+  }
+
+  /*
+   * Aucun signal suffisamment fort.
+   */
   return "Football";
 }

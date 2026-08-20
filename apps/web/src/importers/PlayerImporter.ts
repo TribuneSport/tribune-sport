@@ -47,12 +47,12 @@ export class PlayerImporter {
     const teams = new Map<number, ApiTeam>();
 
     console.log("");
-    console.log("👤 Récupération des équipes et joueurs...");
+    console.log("Récupération des équipes et joueurs...");
 
     for (const competition of COMPETITIONS) {
       try {
         console.log(
-          `📡 Récupération des équipes pour les joueurs : ${competition}`
+          `Récupération des équipes : ${competition}`
         );
 
         const data = await footballFetch<TeamsResponse>(
@@ -64,7 +64,7 @@ export class PlayerImporter {
         }
 
         console.log(
-          `✅ ${data.teams.length} équipes récupérées.`
+          `${data.teams.length} équipes récupérées.`
         );
       } catch (error) {
         if (
@@ -72,13 +72,8 @@ export class PlayerImporter {
           error.status === 429
         ) {
           console.warn(
-            `⚠️ Quota API atteint pendant ${competition}.`
+            `Quota API atteint pendant ${competition}.`
           );
-
-          console.warn(
-            "⏸️ Import des joueurs interrompu pour cette exécution."
-          );
-
           break;
         }
 
@@ -88,17 +83,12 @@ export class PlayerImporter {
 
     let imported = 0;
 
-    console.log("");
     console.log(
-      `📊 ${teams.size} équipes uniques à traiter.`
+      `${teams.size} équipes uniques à traiter.`
     );
 
     for (const team of teams.values()) {
-      if (!team.squad || team.squad.length === 0) {
-        console.log(
-          `ℹ️ Aucun joueur fourni pour : ${team.name}`
-        );
-
+      if (!team.squad?.length) {
         continue;
       }
 
@@ -115,71 +105,113 @@ export class PlayerImporter {
 
       if (!club) {
         console.warn(
-          `⚠️ Club introuvable pour les joueurs : ${team.name} → ${clubSlug}`
+          `Club introuvable : ${team.name}`
         );
-
         continue;
       }
 
       console.log(
-        `👤 Import joueurs : ${team.name} → ${club.name}`
+        `Import joueurs : ${team.name} (${team.squad.length})`
       );
 
-      for (const player of team.squad) {
-        const nameParts = player.name
-          .trim()
-          .split(/\s+/);
+      /*
+       * Traitement par petits lots.
+       * Cela évite de conserver une énorme opération
+       * en mémoire et limite les risques de timeout.
+       */
+      const BATCH_SIZE = 20;
 
-        const firstname =
-          nameParts.length > 1
-            ? nameParts.slice(0, -1).join(" ")
-            : nameParts[0];
-
-        const lastname =
-          nameParts.length > 1
-            ? nameParts[nameParts.length - 1]
-            : nameParts[0];
-
-        const playerSlug = slugify(
-          `${firstname}-${lastname}-${club.id}`,
-          {
-            lower: true,
-            strict: true,
-          }
+      for (
+        let i = 0;
+        i < team.squad.length;
+        i += BATCH_SIZE
+      ) {
+        const batch = team.squad.slice(
+          i,
+          i + BATCH_SIZE
         );
 
-        let birthDate: Date | undefined;
+        await Promise.all(
+          batch.map(async (player) => {
+            const nameParts = player.name
+              .trim()
+              .split(/\s+/);
 
-        if (player.dateOfBirth) {
-          const parsedDate = new Date(
-            player.dateOfBirth
-          );
+            const firstname =
+              nameParts.length > 1
+                ? nameParts
+                    .slice(0, -1)
+                    .join(" ")
+                : nameParts[0];
 
-          if (!Number.isNaN(parsedDate.getTime())) {
-            birthDate = parsedDate;
-          }
-        }
+            const lastname =
+              nameParts.length > 1
+                ? nameParts[nameParts.length - 1]
+                : nameParts[0];
 
-        await footballDb.createPlayer({
-          firstname,
-          lastname,
-          slug: playerSlug,
-          nationality: player.nationality,
-          birthDate,
-          position: player.position,
-          number: player.shirtNumber,
-          photo: player.photo,
-          clubId: club.id,
-        });
+            const playerSlug = slugify(
+              `${firstname}-${lastname}-${club.id}`,
+              {
+                lower: true,
+                strict: true,
+              }
+            );
 
-        imported++;
+            let birthDate: Date | undefined;
+
+            if (player.dateOfBirth) {
+              const parsedDate = new Date(
+                player.dateOfBirth
+              );
+
+              if (
+                !Number.isNaN(
+                  parsedDate.getTime()
+                )
+              ) {
+                birthDate = parsedDate;
+              }
+            }
+
+            try {
+              await footballDb.createPlayer({
+                firstname,
+                lastname,
+                slug: playerSlug,
+                nationality:
+                  player.nationality,
+                birthDate,
+                position: player.position,
+                number: player.shirtNumber,
+                photo: player.photo,
+                clubId: club.id,
+              });
+
+              imported++;
+            } catch (error: any) {
+              /*
+               * Un joueur déjà présent ne doit pas
+               * faire échouer toute l'initialisation.
+               */
+              if (
+                error?.code === "P2002"
+              ) {
+                return;
+              }
+
+              throw error;
+            }
+          })
+        );
       }
     }
 
     console.log(
-      `✅ ${imported} joueurs importés.`
+      `${imported} joueurs importés.`
     );
 
     return imported;
   }
 }
+
+export default PlayerImporter;
