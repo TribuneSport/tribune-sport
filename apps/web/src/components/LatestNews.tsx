@@ -9,9 +9,14 @@ export default async function LatestNews() {
     where: {
       published: true,
     },
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: [
+      {
+        pubDate: "desc",
+      },
+      {
+        createdAt: "desc",
+      },
+    ],
     take: 5,
   });
 
@@ -48,39 +53,46 @@ export default async function LatestNews() {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
-          {articles.map((article) => (
-            <Link
-              key={article.id}
-              href={`/article/${article.slug}`}
-              className="group overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
-            >
-              <div className="relative h-36 overflow-hidden bg-slate-100 sm:h-40">
-                <Image
-                  src={article.image || "/football.jpg"}
-                  alt={article.title}
-                  fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
-                  className="object-cover transition duration-500 group-hover:scale-105"
-                />
+          {articles.map((article) => {
+            const articleDate =
+              article.pubDate ?? article.createdAt;
 
-                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent" />
-              </div>
+            return (
+              <Link
+                key={article.id}
+                href={`/article/${article.slug}`}
+                className="group overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+              >
+                <div className="relative h-36 overflow-hidden bg-slate-100 sm:h-40">
+                  <Image
+                    src={article.image || "/football.jpg"}
+                    alt={article.title}
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
+                    className="object-cover transition duration-500 group-hover:scale-105"
+                  />
 
-              <div className="p-3.5">
-                <span className="text-[10px] font-black uppercase tracking-wide text-red-600">
-                  {article.category}
-                </span>
+                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent" />
+                </div>
 
-                <h3 className="mt-1.5 line-clamp-3 text-sm font-bold leading-[1.4] text-slate-900 transition-colors group-hover:text-red-600">
-                  {article.title}
-                </h3>
+                <div className="p-3.5">
+                  <span className="text-[10px] font-black uppercase tracking-wide text-red-600">
+                    {article.category}
+                  </span>
 
-                <p className="mt-2.5 text-[10px] font-medium text-slate-400">
-                  {new Date(article.createdAt).toLocaleDateString("fr-FR")}
-                </p>
-              </div>
-            </Link>
-          ))}
+                  <h3 className="mt-1.5 line-clamp-3 text-sm font-bold leading-[1.4] text-slate-900 transition-colors group-hover:text-red-600">
+                    {article.title}
+                  </h3>
+
+                  <p className="mt-2.5 text-[10px] font-medium text-slate-400">
+                    {new Date(articleDate).toLocaleDateString(
+                      "fr-FR"
+                    )}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
     </section>

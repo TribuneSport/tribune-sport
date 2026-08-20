@@ -19,16 +19,22 @@ model Article {
 
   sourceUrl String @unique
 
+  /**
+   * Date réelle de publication de l'article
+   * récupérée depuis le flux RSS.
+   * Nullable pour conserver les anciens articles.
+   */
+  pubDate DateTime?
+
   published Boolean @default(false)
 
-  /*
-   * Article entièrement réécrit par l'IA
-   * avant validation manuelle.
+  /**
+   * Article traité par l'automatisation éditoriale.
    */
   aiRewritten Boolean @default(false)
 
-  /*
-   * Nombre total de consultations de l'article.
+  /**
+   * Nombre total de consultations.
    */
   views Int @default(0)
 
@@ -55,6 +61,7 @@ model Article {
   @@index([playerId])
   @@index([competitionId])
   @@index([views])
+  @@index([pubDate])
 }
 
 model Club {
@@ -190,7 +197,7 @@ model Standing {
   points Int @default(0)
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime
 }
 
 model Transfer {
@@ -266,27 +273,6 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
-
-/*
- * ============================================================
- * VISITES
- * ============================================================
- *
- * Une ligne = une consultation.
- *
- * articleId :
- * - permet de connaître les articles les plus vus
- *
- * path :
- * - permet aussi d'enregistrer les visites générales du site
- *
- * createdAt :
- * - permet de calculer :
- *   - aujourd'hui
- *   - cette semaine
- *   - ce mois
- *   - total
- */
 
 model Visit {
   id Int @id @default(autoincrement())

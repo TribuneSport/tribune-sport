@@ -16,9 +16,14 @@ export default async function CategorySection({
       published: true,
       category,
     },
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: [
+      {
+        pubDate: "desc",
+      },
+      {
+        createdAt: "desc",
+      },
+    ],
     take: 4,
   });
 

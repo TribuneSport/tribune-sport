@@ -13,6 +13,7 @@ export class RSSImportService {
     let imported = 0;
     let duplicates = 0;
     let updatedImages = 0;
+    let updatedDates = 0;
     let nonFrench = 0;
     let invalid = 0;
 
@@ -57,7 +58,29 @@ export class RSSImportService {
 
       /*
        * ---------------------------------------------------------
-       * 2. ANTI-DOUBLON
+       * 2. DATE DE PUBLICATION
+       * ---------------------------------------------------------
+       *
+       * On utilise la vraie date provenant du RSS.
+       *
+       * Si la date est invalide, on laisse null.
+       */
+
+      let pubDate: Date | null = null;
+
+      if (article.pubDate?.trim()) {
+        const parsedDate = new Date(
+          article.pubDate.trim()
+        );
+
+        if (!Number.isNaN(parsedDate.getTime())) {
+          pubDate = parsedDate;
+        }
+      }
+
+      /*
+       * ---------------------------------------------------------
+       * 3. ANTI-DOUBLON
        * ---------------------------------------------------------
        */
 
@@ -69,21 +92,48 @@ export class RSSImportService {
         });
 
       if (existing) {
+        const updateData: {
+          image?: string;
+          pubDate?: Date;
+        } = {};
+
+        /*
+         * Si l'ancien article n'a pas d'image,
+         * on récupère celle du RSS.
+         */
+
         if (!existing.image && article.image) {
-          await db.article.update({
-            where: {
-              id: existing.id,
-            },
-            data: {
-              image: article.image,
-            },
-          });
+          updateData.image = article.image;
 
           updatedImages++;
 
           console.log(
             `🖼️ Image ajoutée : ${title}`
           );
+        }
+
+        /*
+         * Si l'ancien article n'a pas encore de date,
+         * on récupère la date RSS.
+         */
+
+        if (!existing.pubDate && pubDate) {
+          updateData.pubDate = pubDate;
+
+          updatedDates++;
+
+          console.log(
+            `📅 Date ajoutée : ${title}`
+          );
+        }
+
+        if (Object.keys(updateData).length > 0) {
+          await db.article.update({
+            where: {
+              id: existing.id,
+            },
+            data: updateData,
+          });
         } else {
           duplicates++;
 
@@ -97,7 +147,7 @@ export class RSSImportService {
 
       /*
        * ---------------------------------------------------------
-       * 3. CATÉGORIE
+       * 4. CATÉGORIE
        * ---------------------------------------------------------
        */
 
@@ -108,7 +158,7 @@ export class RSSImportService {
 
       /*
        * ---------------------------------------------------------
-       * 4. SLUG
+       * 5. SLUG
        * ---------------------------------------------------------
        */
 
@@ -132,7 +182,7 @@ export class RSSImportService {
 
       /*
        * ---------------------------------------------------------
-       * 5. IMAGE
+       * 6. IMAGE
        * ---------------------------------------------------------
        */
 
@@ -141,11 +191,8 @@ export class RSSImportService {
 
       /*
        * ---------------------------------------------------------
-       * 6. BROUILLON
+       * 7. CRÉATION DU BROUILLON
        * ---------------------------------------------------------
-       *
-       * L'article RSS entre comme matière première.
-       * L'agent IA le réécrira ensuite.
        */
 
       await db.article.create({
@@ -163,6 +210,8 @@ export class RSSImportService {
           image,
 
           sourceUrl: article.link,
+
+          pubDate,
 
           published: false,
 
@@ -195,6 +244,9 @@ export class RSSImportService {
     );
     console.log(
       `🖼️ Images mises à jour : ${updatedImages}`
+    );
+    console.log(
+      `📅 Dates mises à jour : ${updatedDates}`
     );
     console.log(
       `🌍 Non français : ${nonFrench}`
