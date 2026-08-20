@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { PlayerImporter } from "@/importers/PlayerImporter";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export async function POST() {
   try {
@@ -14,9 +15,9 @@ export async function POST() {
 
     const players = await importer.execute();
 
-    console.log("====================================");
-    console.log(`IMPORT JOUEURS TERMINÉ : ${players}`);
-    console.log("====================================");
+    console.log(
+      `IMPORT JOUEURS TERMINE : ${players}`
+    );
 
     return NextResponse.json({
       success: true,
@@ -28,16 +29,15 @@ export async function POST() {
       error
     );
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Erreur inconnue lors de l'import des joueurs.";
-
     return NextResponse.json(
       {
         success: false,
-        message: "Impossible d'importer les joueurs.",
-        error: message,
+        message:
+          "Impossible d'importer les joueurs.",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Erreur inconnue.",
       },
       {
         status: 500,
