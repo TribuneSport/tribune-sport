@@ -17,7 +17,7 @@ model Article {
   category String
   image    String
 
-  sourceUrl String @unique
+  sourceUrl String? @unique
 
   /**
    * Date réelle de publication de l'article
@@ -243,8 +243,8 @@ model Account {
   access_token  String?
   expires_at    Int?
   token_type    String?
-  scope         String?
-  id_token      String?
+  scope String?
+  id_token String?
   session_state String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

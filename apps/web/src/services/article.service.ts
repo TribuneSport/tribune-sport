@@ -6,7 +6,7 @@ interface CreateArticleInput {
   content: string;
   category: string;
   image: string;
-  sourceUrl: string;
+  sourceUrl?: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
   slug?: string | null;
@@ -51,7 +51,7 @@ export class ArticleService {
         content: data.content,
         category: data.category,
         image: data.image,
-        sourceUrl: data.sourceUrl,
+        sourceUrl: data.sourceUrl?.trim() || null,
         seoTitle: data.seoTitle || null,
         seoDescription: data.seoDescription || null,
         slug: data.slug || null,
