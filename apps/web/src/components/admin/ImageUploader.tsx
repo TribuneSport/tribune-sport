@@ -7,6 +7,16 @@ interface Props {
   onChange: (url: string) => void;
 }
 
+interface PexelsPhoto {
+  id: number;
+  url: string;
+  thumbnail: string;
+  photographer: string;
+  photographerUrl: string;
+  pexelsUrl: string;
+  alt: string;
+}
+
 export default function ImageUploader({
   value,
   onChange,
@@ -16,6 +26,10 @@ export default function ImageUploader({
   const [preview, setPreview] = useState(value);
   const [loading, setLoading] = useState(false);
   const [drag, setDrag] = useState(false);
+
+  const [search, setSearch] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [photos, setPhotos] = useState<PexelsPhoto[]>([]);
 
   async function upload(file: File) {
     try {
@@ -64,6 +78,51 @@ export default function ImageUploader({
     upload(file);
   }
 
+  async function searchPexels(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const query = search.trim();
+
+    if (!query) {
+      return;
+    }
+
+    try {
+      setSearching(true);
+      setPhotos([]);
+
+      const response = await fetch(
+        `/api/pexels/search?query=${encodeURIComponent(query)}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ||
+            "Impossible de rechercher les images."
+        );
+      }
+
+      setPhotos(data.photos ?? []);
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Impossible de rechercher les images."
+      );
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function selectPexelsImage(photo: PexelsPhoto) {
+    setPreview(photo.url);
+    onChange(photo.url);
+  }
+
   return (
     <div className="space-y-5">
       <div
@@ -103,25 +162,101 @@ export default function ImageUploader({
         ) : (
           <>
             <p className="text-5xl mb-4">
-              📷
+              ðŸ“·
             </p>
 
             <p className="font-semibold text-lg">
-              Déposez votre image ici
+              DÃ©posez votre image ici
             </p>
 
             <p className="text-gray-500">
-              ou cliquez pour sélectionner un fichier
+              ou cliquez pour sÃ©lectionner un fichier
             </p>
           </>
         )}
+      </div>
+
+      <div className="rounded-xl border bg-gray-50 p-5">
+        <h3 className="mb-3 text-lg font-bold">
+          🔎 Rechercher une image sur Pexels
+        </h3>
+
+        <form
+          onSubmit={searchPexels}
+          className="flex flex-col gap-3 sm:flex-row"
+        >
+          <input
+            type="text"
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            placeholder="Ex : football, PSG, Marseille..."
+            className="flex-1 rounded-lg border bg-white p-3"
+          />
+
+          <button
+            type="submit"
+            disabled={searching || !search.trim()}
+            className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {searching
+              ? "Recherche..."
+              : "Rechercher"}
+          </button>
+        </form>
+
+        {photos.length > 0 && (
+          <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {photos.map((photo) => (
+              <button
+                key={photo.id}
+                type="button"
+                onClick={() =>
+                  selectPexelsImage(photo)
+                }
+                className="group overflow-hidden rounded-xl border bg-white text-left transition hover:border-blue-600 hover:shadow-lg"
+              >
+                <img
+                  src={photo.thumbnail}
+                  alt={photo.alt || "Image Pexels"}
+                  className="h-32 w-full object-cover transition group-hover:scale-105"
+                />
+
+                <div className="p-2">
+                  <p className="text-xs font-medium text-gray-700">
+                    Utiliser cette image
+                  </p>
+
+                  <p className="mt-1 truncate text-xs text-gray-500">
+                    {photo.photographer}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {!searching &&
+          search.trim() &&
+          photos.length === 0 && (
+            <p className="mt-4 text-sm text-gray-500">
+              Aucune image trouvÃ©e.
+            </p>
+          )}
+
+        <p className="mt-4 text-xs text-gray-500">
+          Images fournies par Pexels. Pensez Ã  respecter
+          les conditions d'utilisation et les crÃ©dits
+          demandÃ©s par Pexels.
+        </p>
       </div>
 
       {preview && (
         <div className="overflow-hidden rounded-xl border">
           <img
             src={preview}
-            alt="Prévisualisation"
+            alt="PrÃ©visualisation"
             className="w-full max-h-[500px] object-cover"
           />
         </div>
