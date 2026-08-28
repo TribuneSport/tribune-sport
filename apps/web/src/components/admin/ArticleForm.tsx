@@ -369,7 +369,7 @@ export default function ArticleForm({ article }: Props) {
         <input
           type="url"
           className="w-full rounded-lg border p-3"
-          value={form.sourceUrl}
+          value={form.sourceUrl ?? ""}
           onChange={(e) =>
             update("sourceUrl", e.target.value)
           }
