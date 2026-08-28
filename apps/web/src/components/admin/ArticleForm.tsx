@@ -14,7 +14,7 @@ interface Article {
 
   category: string;
   image: string;
-  sourceUrl: string;
+  sourceUrl: string | null;
 
   seoTitle: string | null;
   seoDescription: string | null;
