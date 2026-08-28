@@ -1,0 +1,2 @@
+ALTER TABLE "Article"
+ALTER COLUMN "sourceUrl" DROP NOT NULL;
