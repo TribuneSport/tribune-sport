@@ -55,27 +55,29 @@ export default async function ArticlePage({ params }: Props) {
 
       </article>
 
-      <div className="mt-10 border-t pt-6">
+      {article.sourceUrl && (
+        <div className="mt-10 border-t pt-6">
 
-        <strong>Source :</strong>
+          <strong>Source :</strong>
 
-        <br />
+          <br />
 
-        <a
+          <a
 
-          href={article.sourceUrl}
+            href={article.sourceUrl}
 
-          target="_blank"
+            target="_blank"
 
-          className="text-blue-600 underline"
+            className="text-blue-600 underline"
 
-        >
+          >
 
-          {article.sourceUrl}
+            {article.sourceUrl}
 
-        </a>
+          </a>
 
-      </div>
+        </div>
+      )}
 
     </main>
 
