@@ -239,6 +239,64 @@ export default function ArticlesTable({ articles }: Props) {
     }
   }
 
+  async function deleteSelected() {
+    if (selectedIds.length === 0) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `ATTENTION : voulez-vous supprimer définitivement ${
+        selectedIds.length
+      } article${selectedIds.length > 1 ? "s" : ""} ?\n\nCette action est irréversible.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setProcessingBulk(true);
+
+      const response = await fetch(
+        "/api/articles/delete-bulk",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ids: selectedIds,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.error ||
+            "Erreur lors de la suppression des articles."
+        );
+      }
+
+      alert(
+        `${data.count} article${
+          data.count > 1 ? "s" : ""
+        } supprimé${data.count > 1 ? "s" : ""}.`
+      );
+
+      setSelectedIds([]);
+      router.refresh();
+    } catch (error) {
+      console.error(error);
+      alert(
+        "Impossible de supprimer les articles sélectionnés."
+      );
+    } finally {
+      setProcessingBulk(false);
+    }
+  }
+
   return (
     <div className="overflow-hidden rounded-3xl bg-white shadow-xl">
       <div className="border-b p-6">
@@ -285,6 +343,17 @@ export default function ArticlesTable({ articles }: Props) {
 
               <button
                 type="button"
+                onClick={deleteSelected}
+                disabled={processingBulk}
+                className="rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {processingBulk
+                  ? "Traitement..."
+                  : "🗑 Supprimer la sélection"}
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setSelectedIds([])}
                 disabled={processingBulk}
                 className="rounded-xl bg-slate-200 px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-300"
@@ -303,6 +372,7 @@ export default function ArticlesTable({ articles }: Props) {
               type="checkbox"
               checked={allSelected}
               onChange={toggleAll}
+              disabled={processingBulk}
               className="h-5 w-5 rounded border-slate-300"
             />
 
@@ -413,7 +483,8 @@ export default function ArticlesTable({ articles }: Props) {
                           unpublishArticle(article.id)
                         }
                         disabled={
-                          processingId === article.id
+                          processingId === article.id ||
+                          processingBulk
                         }
                         className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
                       >
@@ -428,7 +499,8 @@ export default function ArticlesTable({ articles }: Props) {
                           publishArticle(article.id)
                         }
                         disabled={
-                          processingId === article.id
+                          processingId === article.id ||
+                          processingBulk
                         }
                         className="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                       >
