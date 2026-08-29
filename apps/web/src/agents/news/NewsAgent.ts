@@ -1,13 +1,6 @@
 ﻿import { db } from "@/lib/db";
-
-function cleanText(text: string): string {
-  return text
-    .replace(/\r\n/g, "\n")
-    .replace(/\r/g, "\n")
-    .replace(/[ \t]+/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
+import { OllamaService } from "@/services/ollama.service";
+import { AGENTS } from "@/config/agents";
 
 function stripHtml(text: string): string {
   return text
@@ -24,63 +17,46 @@ function stripHtml(text: string): string {
     .trim();
 }
 
-function buildArticleContent(
-  title: string,
-  summary: string,
-  content: string
-): string {
-  const cleanSummary = stripHtml(cleanText(summary));
-  const cleanContent = stripHtml(cleanText(content));
-
-  const paragraphs = cleanContent
-    .split(/\n{2,}/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-
-  const html: string[] = [];
-
-  if (cleanSummary) {
-    html.push(`<p>${cleanSummary}</p>`);
-  }
-
-  if (paragraphs.length > 0) {
-    for (const paragraph of paragraphs) {
-      if (
-        paragraph === cleanSummary ||
-        paragraph.length < 30
-      ) {
-        continue;
-      }
-
-      html.push(`<p>${paragraph}</p>`);
-    }
-  }
-
-  if (html.length === 0) {
-    html.push(
-      `<p>${cleanContent || cleanSummary || title}</p>`
-    );
-  }
-
-  return html.join("");
+function cleanText(text: string): string {
+  return stripHtml(text)
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
-function buildSeoTitle(title: string): string {
-  return title.trim().substring(0, 60);
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
-function buildSeoDescription(
-  summary: string,
-  title: string
-): string {
-  const source =
-    stripHtml(summary).trim() ||
-    title.trim();
+function normalizeContent(content: string): string {
+  let value = content.trim();
 
-  return source.substring(0, 160);
+  value = value.replace(/```html/gi, "");
+  value = value.replace(/```/g, "");
+
+  value = value
+    .replace(/<h1[^>]*>/gi, "<h2>")
+    .replace(/<\/h1>/gi, "</h2>")
+    .replace(/<h3[^>]*>/gi, "<h2>")
+    .replace(/<\/h3>/gi, "</h2>");
+
+  value = value.replace(
+    /<(?!\/?(?:p|h2)\b)[^>]+>/gi,
+    ""
+  );
+
+  return value.trim();
 }
 
 export class NewsAgent {
+  private readonly ollama = new OllamaService();
+
   async execute(): Promise<number> {
     const articles = await db.article.findMany({
       where: {
@@ -90,6 +66,7 @@ export class NewsAgent {
       orderBy: {
         createdAt: "asc",
       },
+      take: AGENTS.MAX_ARTICLES_PER_RUN,
     });
 
     let processed = 0;
@@ -98,62 +75,50 @@ export class NewsAgent {
       try {
         if (!article.content?.trim()) {
           console.log(
-            `Article ignoré : contenu vide - ${article.title}`
+            `⚠️ Article ignoré : contenu vide - ${article.title}`
           );
           continue;
         }
 
         console.log(
-          `📰 Préparation article : ${article.title}`
+          `🤖 Agent éditorial Ollama : ${article.title}`
         );
 
-        const content = buildArticleContent(
-          article.title,
-          article.summary,
-          article.content
+        const title = cleanText(article.title);
+        const summary = cleanText(article.summary || "");
+        const content = cleanText(article.content || "");
+
+        const result = await this.ollama.generateArticle({
+          title,
+          summary,
+          content,
+          category: article.category,
+        });
+
+        const safeTitle = escapeHtml(result.title);
+        const safeSummary = escapeHtml(result.summary);
+
+        const editorialContent = normalizeContent(
+          result.content
         );
 
-        const summary =
-          stripHtml(article.summary || "").trim() ||
-          stripHtml(article.content || "")
-            .trim()
-            .substring(0, 300);
-
-        const seoTitle = buildSeoTitle(article.title);
-
-        const seoDescription =
-          buildSeoDescription(
-            summary,
-            article.title
+        if (!editorialContent) {
+          throw new Error(
+            "Le contenu généré est vide."
           );
+        }
 
         await db.article.update({
           where: {
             id: article.id,
           },
           data: {
-            title: article.title.trim(),
-
-            summary,
-
-            content,
-
-            seoTitle,
-
-            seoDescription,
-
-            /*
-             * Ce champ ne signifie plus qu'une API IA
-             * payante a été utilisée.
-             *
-             * Il indique que l'article a été traité
-             * par l'automatisation éditoriale.
-             */
+            title: safeTitle,
+            summary: safeSummary,
+            content: editorialContent,
+            seoTitle: result.seoTitle,
+            seoDescription: result.seoDescription,
             aiRewritten: true,
-
-            /*
-             * L'article reste en brouillon.
-             */
             published: false,
           },
         });
@@ -161,15 +126,19 @@ export class NewsAgent {
         processed++;
 
         console.log(
-          `✅ Article préparé : ${article.title}`
+          `✅ Article généré : ${result.title}`
         );
       } catch (error) {
         console.error(
-          `❌ Erreur préparation article ${article.id}:`,
+          `❌ Erreur Agent éditorial - article ${article.id}:`,
           error
         );
       }
     }
+
+    console.log(
+      `🤖 Agent éditorial terminé : ${processed}/${articles.length}`
+    );
 
     return processed;
   }

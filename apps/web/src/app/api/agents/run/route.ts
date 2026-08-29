@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { Scheduler } from "@/agents/Scheduler";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const scheduler = new Scheduler();
@@ -12,11 +14,16 @@ export async function GET() {
       ...result,
     });
   } catch (error) {
-    console.error(error);
+    console.error("[API /agents/run]", error);
 
-    return NextResponse.json({
-      success: false,
-      error: String(error),
-    });
+    return NextResponse.json(
+      {
+        success: false,
+        error: String(error),
+      },
+      {
+        status: 500,
+      }
+    );
   }
 }

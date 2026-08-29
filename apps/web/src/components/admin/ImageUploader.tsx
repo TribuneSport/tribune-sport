@@ -30,6 +30,7 @@ export default function ImageUploader({
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
   const [photos, setPhotos] = useState<PexelsPhoto[]>([]);
+  const [searchError, setSearchError] = useState("");
 
   async function upload(file: File) {
     try {
@@ -52,7 +53,7 @@ export default function ImageUploader({
       setPreview(json.url);
       onChange(json.url);
     } catch {
-      alert("Erreur pendant l'upload.");
+      alert("Erreur pendant l’upload.");
     } finally {
       setLoading(false);
     }
@@ -78,24 +79,25 @@ export default function ImageUploader({
     upload(file);
   }
 
-  async function searchPexels(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
+  async function searchPexels() {
     const query = search.trim();
 
-    if (!query) {
+    if (!query || searching) {
       return;
     }
 
     try {
       setSearching(true);
       setPhotos([]);
+      setSearchError("");
 
       const response = await fetch(
         `/api/pexels/search?query=${encodeURIComponent(query)}`
       );
 
       const data = await response.json();
+
+      console.log("Réponse Pexels :", data);
 
       if (!response.ok) {
         throw new Error(
@@ -104,11 +106,78 @@ export default function ImageUploader({
         );
       }
 
-      setPhotos(data.photos ?? []);
-    } catch (error) {
-      console.error(error);
+      const rawPhotos = Array.isArray(data?.photos)
+        ? data.photos
+        : Array.isArray(data?.data?.photos)
+          ? data.data.photos
+          : Array.isArray(data?.results)
+            ? data.results
+            : [];
 
-      alert(
+      const normalizedPhotos: PexelsPhoto[] =
+        rawPhotos
+          .map((photo: any, index: number) => {
+            const imageUrl =
+              photo?.url ||
+              photo?.src?.large2x ||
+              photo?.src?.large ||
+              photo?.src?.medium ||
+              photo?.src?.original ||
+              "";
+
+            const thumbnailUrl =
+              photo?.thumbnail ||
+              photo?.src?.medium ||
+              photo?.src?.small ||
+              photo?.src?.tiny ||
+              imageUrl;
+
+            if (!imageUrl) {
+              return null;
+            }
+
+            return {
+              id: Number(photo?.id) || index,
+              url: imageUrl,
+              thumbnail: thumbnailUrl,
+              photographer:
+                photo?.photographer ||
+                "Pexels",
+              photographerUrl:
+                photo?.photographer_url ||
+                photo?.photographerUrl ||
+                "",
+              pexelsUrl:
+                photo?.pexels_url ||
+                photo?.pexelsUrl ||
+                "",
+              alt:
+                photo?.alt ||
+                photo?.alt_description ||
+                "Image de football",
+            };
+          })
+          .filter(
+            (photo: PexelsPhoto | null): photo is PexelsPhoto =>
+              photo !== null
+          );
+
+      setPhotos(normalizedPhotos);
+
+      if (normalizedPhotos.length === 0) {
+        setSearchError(
+          "Aucune image trouvée pour cette recherche."
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Erreur recherche Pexels :",
+        error
+      );
+
+      setPhotos([]);
+
+      setSearchError(
         error instanceof Error
           ? error.message
           : "Impossible de rechercher les images."
@@ -133,9 +202,7 @@ export default function ImageUploader({
         }}
         onDragLeave={() => setDrag(false)}
         onDrop={drop}
-        className={`cursor-pointer rounded-xl border-2 border-dashed p-10 text-center transition
-
-        ${
+        className={`cursor-pointer rounded-xl border-2 border-dashed p-10 text-center transition ${
           drag
             ? "border-blue-600 bg-blue-50"
             : "border-gray-300"
@@ -161,16 +228,16 @@ export default function ImageUploader({
           </>
         ) : (
           <>
-            <p className="text-5xl mb-4">
-              ðŸ“·
+            <p className="mb-4 text-5xl">
+              📷
             </p>
 
-            <p className="font-semibold text-lg">
-              DÃ©posez votre image ici
+            <p className="text-lg font-semibold">
+              Déposez votre image ici
             </p>
 
             <p className="text-gray-500">
-              ou cliquez pour sÃ©lectionner un fichier
+              ou cliquez pour sélectionner un fichier
             </p>
           </>
         )}
@@ -181,74 +248,125 @@ export default function ImageUploader({
           🔎 Rechercher une image sur Pexels
         </h3>
 
-        <form
-          onSubmit={searchPexels}
-          className="flex flex-col gap-3 sm:flex-row"
-        >
+        <div className="flex flex-col gap-3 sm:flex-row">
           <input
             type="text"
             value={search}
             onChange={(e) =>
               setSearch(e.target.value)
             }
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                searchPexels();
+              }
+            }}
             placeholder="Ex : football, PSG, Marseille..."
             className="flex-1 rounded-lg border bg-white p-3"
           />
 
           <button
-            type="submit"
-            disabled={searching || !search.trim()}
+            type="button"
+            onClick={searchPexels}
+            disabled={
+              searching || !search.trim()
+            }
             className="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {searching
               ? "Recherche..."
               : "Rechercher"}
           </button>
-        </form>
+        </div>
 
-        {photos.length > 0 && (
-          <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {photos.map((photo) => (
-              <button
-                key={photo.id}
-                type="button"
-                onClick={() =>
-                  selectPexelsImage(photo)
-                }
-                className="group overflow-hidden rounded-xl border bg-white text-left transition hover:border-blue-600 hover:shadow-lg"
-              >
-                <img
-                  src={photo.thumbnail}
-                  alt={photo.alt || "Image Pexels"}
-                  className="h-32 w-full object-cover transition group-hover:scale-105"
-                />
+        {searching && (
+          <div className="mt-5 rounded-lg border bg-white p-6 text-center">
+            <p className="font-medium">
+              Recherche des images...
+            </p>
 
-                <div className="p-2">
-                  <p className="text-xs font-medium text-gray-700">
-                    Utiliser cette image
-                  </p>
-
-                  <p className="mt-1 truncate text-xs text-gray-500">
-                    {photo.photographer}
-                  </p>
-                </div>
-              </button>
-            ))}
+            <p className="mt-1 text-sm text-gray-500">
+              Quelques secondes peuvent être nécessaires.
+            </p>
           </div>
         )}
 
         {!searching &&
+          photos.length > 0 && (
+            <div className="mt-5 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {photos.map((photo) => (
+                <button
+                  key={photo.id}
+                  type="button"
+                  onClick={() =>
+                    selectPexelsImage(photo)
+                  }
+                  className={`group overflow-hidden rounded-xl border bg-white text-left transition hover:border-blue-600 hover:shadow-lg ${
+                    preview === photo.url
+                      ? "border-2 border-blue-600 ring-2 ring-blue-200"
+                      : ""
+                  }`}
+                >
+                  <div className="relative h-32 w-full overflow-hidden bg-gray-100">
+                    <img
+                      src={photo.thumbnail}
+                      alt={
+                        photo.alt ||
+                        "Image Pexels"
+                      }
+                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      loading="lazy"
+                      onError={(e) => {
+                        const img =
+                          e.currentTarget;
+
+                        if (
+                          img.src !==
+                          photo.url
+                        ) {
+                          img.src = photo.url;
+                        }
+                      }}
+                    />
+
+                    {preview === photo.url && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                        <span className="rounded-full bg-blue-600 px-3 py-1 text-sm font-semibold text-white">
+                          ✓ Sélectionnée
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-2">
+                    <p className="text-xs font-medium text-gray-700">
+                      Utiliser cette image
+                    </p>
+
+                    <p className="mt-1 truncate text-xs text-gray-500">
+                      {photo.photographer}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+        {!searching &&
           search.trim() &&
-          photos.length === 0 && (
-            <p className="mt-4 text-sm text-gray-500">
-              Aucune image trouvÃ©e.
-            </p>
+          photos.length === 0 &&
+          searchError && (
+            <div className="mt-4 rounded-lg border border-gray-200 bg-white p-4">
+              <p className="text-sm text-gray-600">
+                {searchError}
+              </p>
+            </div>
           )}
 
         <p className="mt-4 text-xs text-gray-500">
-          Images fournies par Pexels. Pensez Ã  respecter
-          les conditions d'utilisation et les crÃ©dits
-          demandÃ©s par Pexels.
+          Images fournies par Pexels. Pensez à respecter
+          les conditions d’utilisation et les crédits
+          demandés par Pexels.
         </p>
       </div>
 
@@ -256,8 +374,8 @@ export default function ImageUploader({
         <div className="overflow-hidden rounded-xl border">
           <img
             src={preview}
-            alt="PrÃ©visualisation"
-            className="w-full max-h-[500px] object-cover"
+            alt="Prévisualisation"
+            className="max-h-[500px] w-full object-cover"
           />
         </div>
       )}
