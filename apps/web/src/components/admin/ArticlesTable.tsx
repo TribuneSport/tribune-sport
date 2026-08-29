@@ -12,6 +12,8 @@ type Article = {
   published: boolean;
   createdAt: Date | string;
   slug: string | null;
+  sourceUrl: string | null;
+  aiRewritten: boolean;
 };
 
 type Props = {
@@ -301,6 +303,7 @@ export default function ArticlesTable({ articles }: Props) {
     <div className="overflow-hidden rounded-3xl bg-white shadow-xl">
       <div className="border-b p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
           <div>
             <h2 className="text-3xl font-black">
               Liste des articles
@@ -314,6 +317,7 @@ export default function ArticlesTable({ articles }: Props) {
 
           {selectedIds.length > 0 && (
             <div className="flex flex-wrap items-center gap-3">
+
               <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-bold text-blue-700">
                 {selectedIds.length} sélectionné
                 {selectedIds.length > 1 ? "s" : ""}
@@ -360,14 +364,18 @@ export default function ArticlesTable({ articles }: Props) {
               >
                 Annuler
               </button>
+
             </div>
           )}
+
         </div>
       </div>
 
       {articles.length > 0 && (
         <div className="border-b bg-slate-50 px-4 py-3 sm:px-6">
+
           <label className="flex cursor-pointer items-center gap-3 text-sm font-bold text-slate-700">
+
             <input
               type="checkbox"
               checked={allSelected}
@@ -381,14 +389,20 @@ export default function ArticlesTable({ articles }: Props) {
             <span className="font-normal text-slate-500">
               ({articles.length})
             </span>
+
           </label>
+
         </div>
       )}
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1100px]">
+
+        <table className="w-full min-w-[1200px]">
+
           <thead className="bg-slate-100">
+
             <tr>
+
               <th className="w-14 p-4 text-center">
                 ✓
               </th>
@@ -402,6 +416,10 @@ export default function ArticlesTable({ articles }: Props) {
               </th>
 
               <th className="p-4 text-left">
+                Origine
+              </th>
+
+              <th className="p-4 text-left">
                 Statut
               </th>
 
@@ -412,16 +430,22 @@ export default function ArticlesTable({ articles }: Props) {
               <th className="p-4 text-right">
                 Actions
               </th>
+
             </tr>
+
           </thead>
 
           <tbody>
+
             {articles.map((article) => (
+
               <tr
                 key={article.id}
                 className="border-t transition hover:bg-slate-50"
               >
+
                 <td className="p-4 text-center">
+
                   <input
                     type="checkbox"
                     checked={selectedIds.includes(article.id)}
@@ -432,41 +456,90 @@ export default function ArticlesTable({ articles }: Props) {
                     className="h-5 w-5 rounded border-slate-300"
                     aria-label={`Sélectionner ${article.title}`}
                   />
+
                 </td>
 
                 <td className="max-w-md p-4 font-semibold">
+
                   <div className="line-clamp-2">
                     {article.title}
                   </div>
+
                 </td>
 
                 <td className="p-4">
+
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium">
                     {article.category}
                   </span>
+
                 </td>
 
                 <td className="p-4">
+
+                  {article.aiRewritten ? (
+
+                    <span
+                      title="Article réécrit par l'agent éditorial Ollama"
+                      className="inline-flex items-center gap-2 rounded-full bg-purple-100 px-3 py-1 text-sm font-semibold text-purple-700"
+                    >
+                      🤖 Ollama
+                    </span>
+
+                  ) : article.sourceUrl ? (
+
+                    <span
+                      title="Article importé depuis un flux RSS"
+                      className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700"
+                    >
+                      📡 RSS
+                    </span>
+
+                  ) : (
+
+                    <span
+                      title="Article créé manuellement"
+                      className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700"
+                    >
+                      ✍️ Manuel
+                    </span>
+
+                  )}
+
+                </td>
+
+                <td className="p-4">
+
                   {article.published ? (
+
                     <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
                       Publié
                     </span>
+
                   ) : (
+
                     <span className="rounded-full bg-orange-100 px-3 py-1 text-sm font-semibold text-orange-700">
                       Brouillon
                     </span>
+
                   )}
+
                 </td>
 
                 <td className="whitespace-nowrap p-4">
+
                   {new Date(
                     article.createdAt
                   ).toLocaleDateString("fr-FR")}
+
                 </td>
 
                 <td className="p-4">
+
                   <div className="flex flex-wrap justify-end gap-2">
+
                     {article.published && article.slug && (
+
                       <Link
                         href={`/article/${article.slug}`}
                         target="_blank"
@@ -474,9 +547,11 @@ export default function ArticlesTable({ articles }: Props) {
                       >
                         Voir
                       </Link>
+
                     )}
 
                     {article.published ? (
+
                       <button
                         type="button"
                         onClick={() =>
@@ -492,7 +567,9 @@ export default function ArticlesTable({ articles }: Props) {
                           ? "..."
                           : "Dépublier"}
                       </button>
+
                     ) : (
+
                       <button
                         type="button"
                         onClick={() =>
@@ -508,6 +585,7 @@ export default function ArticlesTable({ articles }: Props) {
                           ? "..."
                           : "Publier"}
                       </button>
+
                     )}
 
                     <Link
@@ -520,17 +598,24 @@ export default function ArticlesTable({ articles }: Props) {
                     <DeleteArticleButton
                       id={article.id}
                     />
+
                   </div>
+
                 </td>
+
               </tr>
+
             ))}
 
             {articles.length === 0 && (
+
               <tr>
+
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="p-16 text-center text-gray-500"
                 >
+
                   <div className="text-6xl">
                     📰
                   </div>
@@ -542,12 +627,19 @@ export default function ArticlesTable({ articles }: Props) {
                   <p className="mt-3">
                     Commencez par créer votre premier article.
                   </p>
+
                 </td>
+
               </tr>
+
             )}
+
           </tbody>
+
         </table>
+
       </div>
+
     </div>
   );
 }

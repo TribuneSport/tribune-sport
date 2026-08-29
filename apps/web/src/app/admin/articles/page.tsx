@@ -113,6 +113,8 @@ export default async function ArticlesPage() {
               published: article.published,
               createdAt: article.createdAt,
               slug: article.slug,
+              sourceUrl: article.sourceUrl,
+              aiRewritten: article.aiRewritten,
             })
           )}
         />
